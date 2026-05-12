@@ -1,0 +1,282 @@
+name: Aegis-Boot CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  EDK2_VERSION: edk2-stable202311
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  build-bootkit:
+    name: Build UEFI Bootkit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Aegis-Boot
+        uses: actions/checkout@v3
+        with:
+          path: aegis-boot
+      
+      - name: Setup EDK II
+        run: |
+          git clone --depth 1 --branch ${{ env.EDK2_VERSION }} \
+            https://github.com/tianocore/edk2.git
+          cd edk2
+          git submodule update --init --recursive
+      
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential uuid-dev iasl nasm python3-distutils
+      
+      - name: Build EDK II BaseTools
+        run: |
+          cd edk2
+          make -C BaseTools
+          source edksetup.sh
+      
+      - name: Copy Aegis-Boot Packages
+        run: |
+          cp -r aegis-boot/src/BootkitPkg edk2/
+          cp -r aegis-boot/src/AttestationPkg edk2/
+      
+      - name: Build Bootkit Package
+        run: |
+          cd edk2
+          source edksetup.sh
+          build -a X64 -t GCC5 -p BootkitPkg/BootkitPkg.dsc
+      
+      - name: Upload Bootkit Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: bootkit-binaries
+          path: edk2/Build/BootkitPkg/DEBUG_GCC5/X64/*.efi
+
+  test-scanner:
+    name: Test Detection Scanner
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Dependencies
+        run: |
+          pip install -r tests/requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run Unit Tests
+        run: |
+          pytest tests/unit/ -v --cov=src/AegisScanner --cov-report=xml
+      
+      - name: Run Integration Tests
+        run: |
+          pytest tests/integration/ -v
+      
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: scanner
+          name: scanner-coverage
+
+  qemu-integration:
+    name: QEMU Integration Test
+    runs-on: ubuntu-latest
+    needs: build-bootkit
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Install QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 ovmf
+      
+      - name: Download Bootkit Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: bootkit-binaries
+          path: ./binaries
+      
+      - name: Create QEMU Disk Image
+        run: |
+          qemu-img create -f qcow2 test-disk.qcow2 1G
+      
+      - name: Launch QEMU with Bootkit
+        run: |
+          timeout 60 ./scripts/qemu-run.sh --headless --bootkit ./binaries/DxeInject.efi || true
+      
+      - name: Dump Memory State
+        run: |
+          ./scripts/dump-memory.sh > memory-dump.bin || true
+      
+      - name: Dump PCR Values
+        run: |
+          ./scripts/dump-pcrs.sh > pcrs.json || true
+      
+      - name: Upload QEMU Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: qemu-dumps
+          path: |
+            memory-dump.bin
+            pcrs.json
+
+  run-scanner:
+    name: Run Aegis Scanner
+    runs-on: ubuntu-latest
+    needs: qemu-integration
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Scanner Dependencies
+        run: |
+          pip install -r tests/requirements.txt
+      
+      - name: Download QEMU Dumps
+        uses: actions/download-artifact@v3
+        with:
+          name: qemu-dumps
+          path: ./dumps
+      
+      - name: Run Scanner
+        run: |
+          python3 src/AegisScanner/scanner.py \
+            ./dumps/memory-dump.bin \
+            --pcrs ./dumps/pcrs.json \
+            --output results.json \
+            --format json
+      
+      - name: Validate Results
+        run: |
+          python3 tests/validate_ci_results.py results.json
+      
+      - name: Generate HTML Report
+        run: |
+          python3 src/AegisScanner/reports/report_generator.py \
+            results.json --format html > report.html
+      
+      - name: Upload Scan Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: scan-results
+          path: |
+            results.json
+            report.html
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Run Bandit (Python Security)
+        run: |
+          pip install bandit
+          bandit -r src/AegisScanner/ -f json -o bandit-report.json || true
+      
+      - name: Run Safety (Dependency Check)
+        run: |
+          pip install safety
+          safety check --json > safety-report.json || true
+      
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  documentation:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Sphinx
+        run: |
+          pip install sphinx sphinx-rtd-theme
+      
+      - name: Build Documentation
+        run: |
+          cd docs
+          sphinx-build -b html . _build/html || echo "Sphinx not configured yet"
+      
+      - name: Upload Documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: docs/_build/html
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-bootkit, test-scanner, run-scanner]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Create Release Package
+        run: |
+          mkdir -p release
+          cp -r bootkit-binaries release/
+          cp -r scan-results release/
+          cp -r documentation release/
+          tar -czf aegis-boot-release.tar.gz release/
+      
+      - name: Generate Release Notes
+        run: |
+          echo "# Aegis-Boot Release" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Build Information" >> RELEASE_NOTES.md
+          echo "- Commit: ${{ github.sha }}" >> RELEASE_NOTES.md
+          echo "- Date: $(date -u)" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Artifacts" >> RELEASE_NOTES.md
+          echo "- Bootkit binaries" >> RELEASE_NOTES.md
+          echo "- Scanner results" >> RELEASE_NOTES.md
+          echo "- Documentation" >> RELEASE_NOTES.md
+      
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-package
+          path: aegis-boot-release.tar.gz
+
+

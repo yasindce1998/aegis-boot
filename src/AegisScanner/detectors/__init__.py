@@ -17,4 +17,4 @@ __all__ = [
     'EventLogDetector'
 ]
 
-# Made with Bob
+

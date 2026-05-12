@@ -4,6 +4,8 @@ PCR Detector - TPM Platform Configuration Register Analysis
 Detects bootkit artifacts by analyzing PCR values and comparing against
 known-good baselines. Focuses on PCR 0-7 which measure firmware components.
 
+Now includes PCR replay validation to detect event log tampering.
+
 Copyright (c) 2026, Aegis-Boot Research Project
 SPDX-License-Identifier: BSD-2-Clause-Patent
 """
@@ -12,6 +14,8 @@ import hashlib
 import struct
 from typing import Dict, List, Optional
 from pathlib import Path
+
+from .pcr_replay import PCRReplayEngine, HashAlgorithm
 
 
 class PCRDetector:
@@ -29,15 +33,18 @@ class PCRDetector:
         7: "Secure Boot policy"
     }
 
-    def __init__(self, baseline: Optional[Dict] = None):
+    def __init__(self, baseline: Optional[Dict] = None, enable_replay: bool = True):
         """
         Initialize PCR detector.
 
         Args:
             baseline: Baseline PCR values for comparison
+            enable_replay: Enable PCR replay validation (default: True)
         """
         self.baseline = baseline
         self.findings = []
+        self.enable_replay = enable_replay
+        self.replay_engine = PCRReplayEngine() if enable_replay else None
 
     def detect(self, target_path: str) -> List[Dict]:
         """
@@ -74,6 +81,10 @@ class PCRDetector:
 
         # Check for known bootkit signatures
         self._check_known_signatures(pcr_values)
+        
+        # NEW: Perform PCR replay validation if enabled
+        if self.enable_replay and self.replay_engine:
+            self._validate_pcr_replay(target_path, pcr_values)
 
         return self.findings
 
@@ -264,5 +275,91 @@ class PCRDetector:
                         },
                         'recommendation': 'System is infected with known bootkit. Immediate remediation required.'
                     })
+    
+    def _validate_pcr_replay(self, target_path: str, pcr_values: Dict[int, bytes]):
+        """
+        Validate PCR values using event log replay.
+        
+        This is the CORE validation that detects event log tampering.
+        
+        Args:
+            target_path: Path to target file (may contain event log)
+            pcr_values: Current PCR values from TPM
+        """
+        # Check if replay engine is available
+        if not self.replay_engine:
+            return
+        
+        # Try to load event log from same directory
+        target = Path(target_path)
+        event_log_path = target.parent / 'eventlog.bin'
+        
+        if not event_log_path.exists():
+            # Try alternative names
+            event_log_path = target.parent / 'tcg_event_log.bin'
+        
+        if not event_log_path.exists():
+            self.findings.append({
+                'detector': 'pcr',
+                'severity': 'medium',
+                'title': 'Event log not found for replay validation',
+                'description': 'Could not locate TCG event log for PCR replay validation. '
+                             'This prevents detection of event log tampering.',
+                'recommendation': 'Provide event log file for complete validation'
+            })
+            return
+        
+        # Load and parse event log
+        try:
+            from .eventlog_detector import EventLogDetector
+            eventlog_detector = EventLogDetector()
+            events = eventlog_detector._load_event_log(str(event_log_path))
+            
+            if not events:
+                self.findings.append({
+                    'detector': 'pcr',
+                    'severity': 'medium',
+                    'title': 'Failed to parse event log',
+                    'description': 'Event log could not be parsed for replay validation',
+                    'recommendation': 'Verify event log format'
+                })
+                return
+            
+            # Replay event log
+            self.replay_engine.reset()
+            calculated_pcrs = self.replay_engine.replay_event_log(events)
+            
+            # Validate against actual PCR values
+            replay_findings = self.replay_engine.validate_against_tpm(
+                pcr_values,
+                pcr_range=(0, 8)  # Validate firmware PCRs 0-7
+            )
+            
+            # Add replay findings to overall findings
+            self.findings.extend(replay_findings)
+            
+            # Log successful validation if no mismatches
+            if not replay_findings:
+                self.findings.append({
+                    'detector': 'pcr',
+                    'severity': 'info',
+                    'title': 'PCR replay validation passed',
+                    'description': f'Successfully replayed {len(events)} events. '
+                                 'All PCR values match expected values.',
+                    'details': {
+                        'events_processed': len(events),
+                        'pcrs_validated': list(range(8))
+                    },
+                    'recommendation': 'Event log integrity confirmed'
+                })
+        
+        except Exception as e:
+            self.findings.append({
+                'detector': 'pcr',
+                'severity': 'medium',
+                'title': 'PCR replay validation failed',
+                'description': f'Error during PCR replay: {str(e)}',
+                'recommendation': 'Check event log format and PCR data'
+            })
 
-# Made with Bob
+

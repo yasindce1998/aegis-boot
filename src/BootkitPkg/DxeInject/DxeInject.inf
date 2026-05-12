@@ -21,6 +21,14 @@
   DxeInject.h
   KillSwitch.c
   KillSwitch.h
+  LoadImageHook.c
+  LoadImageHook.h
+  StartImageHook.c
+  StartImageHook.h
+  SetVariableHook.c
+  SetVariableHook.h
+  SpiFlashEmulator.c
+  SpiFlashEmulator.h
 
 [Packages]
   MdePkg/MdePkg.dec

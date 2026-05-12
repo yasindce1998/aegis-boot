@@ -20,6 +20,10 @@
 [Sources]
   ExitBootHook.c
   ExitBootHook.h
+  MemoryScanner.c
+  MemoryScanner.h
+  MsrHook.c
+  MsrHook.h
 
 [Packages]
   MdePkg/MdePkg.dec

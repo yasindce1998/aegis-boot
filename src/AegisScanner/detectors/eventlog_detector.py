@@ -386,4 +386,4 @@ class EventLogDetector:
                     'recommendation': 'Investigate additional or missing boot measurements'
                 })
 
-# Made with Bob
+
