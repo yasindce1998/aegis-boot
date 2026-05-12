@@ -1,7 +1,5 @@
 # Project Aegis-Boot
 
-**Version 2.0** | **Status: ✅ All 15 Improvements Complete**
-
 **⚠️ ACADEMIC RESEARCH PROJECT - DEFENSIVE SECURITY ONLY ⚠️**
 
 A production-ready UEFI bootkit research platform for studying firmware-level security threats and defenses.
@@ -41,7 +39,7 @@ Aegis-Boot safely models Tactics, Techniques, and Procedures (TTPs) from known i
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Firmware (SEC/PEI) → DXE Phase → Aegis-Bootkit Hooks      │
+│  Firmware (SEC/PEI) → DXE Phase → Aegis-Bootkit Hooks       │
 │  → Boot Device Selection → OS Bootloader                    │
 │  → ExitBootServices Intercept → TPM Attestation             │
 │  → OS Kernel (Infection Complete)                           │
@@ -332,11 +330,11 @@ If you discover a novel vulnerability during research:
 ## 📞 Contact
 
 **Principal Investigator:** Yasin  
-**Institution:** [Insert Institution/Organization]  
-**Email:** [Insert Contact Email]
+**Institution:** Dead Lock Corp 
+**Email:** yasindce1998@gmail.com
 
-**For vulnerability reports:** security@[institution].edu  
-**For IRB inquiries:** irb@[institution].edu
+**For vulnerability reports:** security@deadlockcorp.edu  
+**For IRB inquiries:** irb@deadlockcorp.edu
 
 ## ⚠️ Disclaimer
 
