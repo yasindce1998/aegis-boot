@@ -174,7 +174,8 @@ InstallBootServicesHooks (
     return EFI_ALREADY_STARTED;
   }
 
-  EFI_TPL  OldTpl;
+  EFI_TPL     OldTpl;
+  EFI_STATUS  Status;
 
   //
   // Raise TPL to HIGH_LEVEL to prevent interruption during hook installation
@@ -230,7 +231,7 @@ InstallBootServicesHooks (
   // Update CRC32 of Runtime Services table (for SetVariable)
   //
   gRT->Hdr.CRC32 = 0;
-  gRT->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
+  gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
 
   //
   // Restore TPL after atomic hook installation

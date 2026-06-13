@@ -21,6 +21,7 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/DebugLib.h>
 #include <Library/PrintLib.h>
+#include <Library/TimerLib.h>
 #include <Protocol/Smbios.h>
 #include <Protocol/Tcg2Protocol.h>
 #include <IndustryStandard/SmBios.h>

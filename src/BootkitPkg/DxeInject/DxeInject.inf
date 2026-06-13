@@ -47,6 +47,7 @@
   Tpm2CommandLib
   Tpm2DeviceLib
   BaseCryptLib
+  TimerLib
 
 [Protocols]
   gEfiSmbiosProtocolGuid                        ## CONSUMES
