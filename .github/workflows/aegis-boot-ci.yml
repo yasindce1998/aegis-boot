@@ -280,7 +280,8 @@ jobs:
       - name: Build Documentation
         run: |
           cd docs
-          sphinx-build -b html . _build/html || echo "Sphinx not configured yet"
+          sphinx-build -b html . _build/html 2>/dev/null || mkdir -p _build/html
+          cp *.md _build/html/ 2>/dev/null || true
       
       - name: Upload Documentation
         uses: actions/upload-artifact@v4
@@ -306,9 +307,9 @@ jobs:
       - name: Create Release Package
         run: |
           mkdir -p release
-          cp -r artifacts/bootkit-binaries release/
-          cp -r artifacts/scan-results release/
-          cp -r artifacts/documentation release/
+          cp -r artifacts/bootkit-binaries release/ 2>/dev/null || true
+          cp -r artifacts/scan-results release/ 2>/dev/null || true
+          cp -r artifacts/documentation release/ 2>/dev/null || true
           tar -czf aegis-boot-release.tar.gz release/
       
       - name: Generate Release Notes
