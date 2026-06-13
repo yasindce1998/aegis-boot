@@ -107,5 +107,5 @@
   # Security hardening
   GCC:*_*_*_CC_FLAGS = -fstack-protector-strong -D_FORTIFY_SOURCE=2
   
-  # Warning flags
-  GCC:*_*_*_CC_FLAGS = -Wall -Wextra -Werror=implicit-function-declaration
+  # Warning flags (no -Wextra: conflicts with EDK2 library code patterns)
+  GCC:*_*_*_CC_FLAGS = -Wall -Wno-unused-parameter -Werror=implicit-function-declaration
