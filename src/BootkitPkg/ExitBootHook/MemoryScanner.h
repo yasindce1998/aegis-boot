@@ -19,10 +19,14 @@
 #include <IndustryStandard/PeImage.h>
 
 //
-// PE/ELF Magic Numbers
+// PE/ELF Magic Numbers (guard against redefinition from PeImage.h)
 //
+#ifndef EFI_IMAGE_DOS_SIGNATURE
 #define EFI_IMAGE_DOS_SIGNATURE     0x5A4D      // MZ
+#endif
+#ifndef EFI_IMAGE_NT_SIGNATURE
 #define EFI_IMAGE_NT_SIGNATURE      0x00004550  // PE00
+#endif
 #define ELF_MAGIC_0                 0x7F        // 0x7F
 #define ELF_MAGIC_1                 'E'
 #define ELF_MAGIC_2                 'L'

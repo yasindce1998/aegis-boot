@@ -38,6 +38,7 @@
   MemoryAllocationLib
   DebugLib
   PrintLib
+  TimerLib
 
 [Protocols]
   gEfiLoadedImageProtocolGuid                   ## CONSUMES

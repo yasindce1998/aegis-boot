@@ -21,6 +21,7 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/DebugLib.h>
 #include <Library/PrintLib.h>
+#include <Library/TimerLib.h>
 #include <Protocol/LoadedImage.h>
 
 //
