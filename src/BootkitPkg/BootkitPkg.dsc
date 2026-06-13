@@ -104,8 +104,8 @@
   # Reproducible builds
   GCC:*_*_*_CC_FLAGS = -frandom-seed=aegis-boot-$(SOURCE_DATE_EPOCH)
   
-  # Security hardening
-  GCC:*_*_*_CC_FLAGS = -fstack-protector-strong -D_FORTIFY_SOURCE=2
+  # Security hardening (no stack protector — UEFI has no __stack_chk_fail runtime)
+  GCC:*_*_*_CC_FLAGS = -fno-stack-protector
   
   # Warning flags (no -Wextra: conflicts with EDK2 library code patterns)
   GCC:*_*_*_CC_FLAGS = -Wall -Wno-unused-parameter -Werror=implicit-function-declaration
