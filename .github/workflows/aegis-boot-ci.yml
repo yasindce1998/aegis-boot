@@ -41,13 +41,22 @@ jobs:
           git clone --depth 1 --branch ${{ env.EDK2_VERSION }} \
             https://github.com/tianocore/edk2.git
           cd edk2
-          # Initialize submodules - clean any stale state first
-          rm -rf .git/modules
+          # Initialize only required submodules (SubhookLib/GoogleTest are unavailable/unneeded)
+          git submodule init \
+            BaseTools/Source/C/BrotliCompress/brotli \
+            MdeModulePkg/Library/BrotliCustomDecompressLib/brotli \
+            CryptoPkg/Library/OpensslLib/openssl \
+            CryptoPkg/Library/MbedTlsLib/mbedtls \
+            ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3 \
+            MdePkg/Library/BaseFdtLib/libfdt \
+            MdePkg/Library/MipiSysTLib/mipisyst \
+            RedfishPkg/Library/JsonLib/jansson \
+            SecurityPkg/DeviceSecurity/SpdmLib/libspdm \
+            MdeModulePkg/Universal/RegularExpressionDxe/oniguruma \
+            UnitTestFrameworkPkg/Library/CmockaLib/cmocka
           for i in {1..3}; do
-            git submodule update --init --recursive --force && break || {
+            git submodule update --recursive && break || {
               echo "Submodule update attempt $i failed, retrying..."
-              rm -rf .git/modules
-              git submodule init
               sleep 10
             }
           done
