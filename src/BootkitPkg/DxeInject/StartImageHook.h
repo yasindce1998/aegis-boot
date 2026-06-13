@@ -58,4 +58,3 @@ InstallStartImageHook (
 
 #endif // __START_IMAGE_HOOK_H__
 
-// Made with Bob

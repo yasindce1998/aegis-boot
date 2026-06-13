@@ -403,4 +403,3 @@ GetEventTypeDescription (
   }
 }
 
-// Made with Bob

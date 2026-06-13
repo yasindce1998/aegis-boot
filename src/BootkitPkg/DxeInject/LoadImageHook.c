@@ -158,4 +158,3 @@ InstallLoadImageHook (
   return EFI_SUCCESS;
 }
 
-// Made with Bob

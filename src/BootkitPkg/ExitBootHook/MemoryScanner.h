@@ -124,4 +124,3 @@ ScanMemoryForPattern (
 
 #endif // __MEMORY_SCANNER_H__
 
-// Made with Bob

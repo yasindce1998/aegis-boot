@@ -144,4 +144,3 @@ GetEventTypeDescription (
 
 #endif // __EVENT_LOG_EXTRACTOR_H__
 
-// Made with Bob

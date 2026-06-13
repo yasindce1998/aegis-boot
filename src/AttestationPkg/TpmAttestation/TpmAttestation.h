@@ -186,4 +186,3 @@ ExportAttestationData (
 
 #endif // __TPM_ATTESTATION_H__
 
-// Made with Bob

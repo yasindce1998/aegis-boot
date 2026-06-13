@@ -143,4 +143,3 @@ LogExitBootTelemetry (
 
 #endif // __EXIT_BOOT_HOOK_H__
 
-// Made with Bob

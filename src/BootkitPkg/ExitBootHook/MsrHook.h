@@ -115,4 +115,3 @@ LogMsrValues (
 
 #endif // __MSR_HOOK_H__
 
-// Made with Bob

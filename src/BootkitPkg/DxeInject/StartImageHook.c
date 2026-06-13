@@ -148,4 +148,3 @@ InstallStartImageHook (
   return EFI_SUCCESS;
 }
 
-// Made with Bob

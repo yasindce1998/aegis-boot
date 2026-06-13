@@ -176,4 +176,3 @@ LogTelemetry (
 
 #endif // __DXE_INJECT_H__
 
-// Made with Bob

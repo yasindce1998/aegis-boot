@@ -502,9 +502,9 @@ After completing this setup:
 1. ✅ Verify all checklist items are complete
 2. ✅ Document hardware bindings
 3. ✅ Test QEMU boot with OVMF and vTPM
-4. ➡️ Proceed to implementing BootkitPkg (see `docs/IMPLEMENTATION.md`)
+4. ➡️ Build BootkitPkg (see `docs/ARCHITECTURE.md`)
 5. ➡️ Configure audit logging (see `scripts/audit-log.sh`)
-6. ➡️ Set up CI/CD pipeline (see `docs/CI_CD.md`)
+6. ➡️ Run the CI pipeline (see `.github/workflows/aegis-boot-ci.yml`)
 
 ---
 

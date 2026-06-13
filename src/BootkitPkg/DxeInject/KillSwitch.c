@@ -624,7 +624,6 @@ CompareDates (
   return (INTN)Day1 - (INTN)Day2;
 }
 
-// Made with Bob
 
 /**
   Parse UUID string into 16-byte array.

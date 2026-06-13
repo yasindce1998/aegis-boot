@@ -402,4 +402,3 @@ DetectMsrHooks (
   return HooksDetected;
 }
 
-// Made with Bob

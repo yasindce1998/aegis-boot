@@ -22,37 +22,22 @@ AegisScanner uses multiple detection techniques:
 
 ```
 AegisScanner/
-├── scanner.py              # Main scanner engine
+├── scanner.py                # Main scanner engine
 ├── detectors/
-│   ├── pcr_detector.py     # PCR anomaly detection
-│   ├── memory_detector.py  # Memory scanning
-│   ├── hook_detector.py    # Hook detection
-│   └── eventlog_detector.py # Event log analysis
-├── rules/
-│   ├── blacklotus.yaml     # BlackLotus signatures
-│   ├── cosmicstrand.yaml   # CosmicStrand signatures
-│   └── lojax.yaml          # Lojax signatures
-├── reports/
-│   └── report_generator.py # Detection reports (v2.0.1: refactored for improved maintainability)
-└── tests/
-    └── test_scanner.py     # Scanner tests
+│   ├── base_detector.py      # Base detector interface
+│   ├── pcr_detector.py       # PCR anomaly detection
+│   ├── pcr_replay.py         # PCR replay algorithm
+│   ├── memory_detector.py    # Memory scanning
+│   ├── hook_detector_v2.py   # Boot Services hook detection
+│   ├── runtime_hook_detector.py # Runtime hook detection
+│   ├── eventlog_detector.py  # Event log analysis
+│   ├── entropy_analyzer.py   # Entropy-based detection
+│   ├── fv_parser.py          # Firmware volume parsing
+│   ├── secure_boot_detector.py # Secure Boot validation
+│   └── smm_detector.py       # SMM-based detection
+└── reports/
+    └── report_generator.py   # HTML/JSON/Markdown reports
 ```
-
-## Recent Updates (v2.0.1)
-
-### Report Generator Refactoring
-The `report_generator.py` module has been significantly improved:
-- **Code Quality**: Reduced cyclomatic complexity by 62%
-- **Performance**: Optimized dictionary operations for faster correlation
-- **Maintainability**: Extracted 5 helper methods for better code organization
-- **Documentation**: Added comprehensive docstrings and type hints
-
-Key improvements:
-- `correlate_findings()` reduced from 88 to 39 lines
-- Added configurable constants for correlation thresholds
-- Improved testability with isolated helper methods
-
-See [../../docs/REFACTORING_CHANGELOG.md](../../docs/REFACTORING_CHANGELOG.md) for detailed changes.
 
 ## Usage
 

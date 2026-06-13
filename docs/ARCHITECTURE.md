@@ -128,29 +128,26 @@ To prevent supply-chain tampering and ensure academic reproducibility:
 ## 6. Repository Layout
 
 ```text
-Aegis-Boot/
-├── docs/                   
-│   ├── PRD.md
-│   ├── technical_details.md
-│   ├── THREAT_MODEL.md     # STRIDE + ATT&CK mapping for emulated adversaries & project infra
-│   └── audit/              # Immutable execution audit logs
-├── src/                    
-│   ├── BootkitPkg/         # EDK II package: UEFI bootkit emulation
-│   │   ├── DxeInject/      # DXE phase implantation & MSR hooking
-│   │   └── ExitBootHook/   # ExitBootServices interception module
-│   ├── AttestationPkg/     # Defensive TPM querying & event log extractors
-│   └── AegisScanner/       # Detection tooling & IoC scanning logic
-├── scripts/                
-│   ├── build.sh            # Automated EDK II compilation scripts (with SBOM)
-│   ├── qemu-run.sh         # QEMU virtualization test harness
-│   ├── nvram-recovery.py   # NVRAM rollback / rescue scripts
-│   ├── sign-artifacts.sh   # Ed25519 artifact signing
-│   ├── fpr-validation.sh   # Nightly 200-boot FPR suite
-│   └── audit-log.sh        # Append-only execution audit logger
-├── test/                   # Integration tests 
-├── .gitignore              
-├── CONTRIBUTING.md         # Contributor guidelines & ethical boundaries
-├── CODE_OF_CONDUCT.md      # Responsible research code of conduct
-├── SECURITY.md             # Vulnerability reporting policy
-└── README.md               
+aegis-boot/
+├── docs/
+│   ├── SETUP.md              # Environment setup guide
+│   ├── ARCHITECTURE.md       # This file
+│   └── TESTING.md            # Testing strategy
+├── src/
+│   ├── BootkitPkg/           # EDK II package: UEFI bootkit emulation
+│   │   ├── DxeInject/        # DXE phase implantation + kill-switches
+│   │   └── ExitBootHook/     # ExitBootServices interception & MSR hooking
+│   ├── AttestationPkg/       # Defensive TPM querying & event log extractors
+│   └── AegisScanner/         # Detection engine (Python)
+├── scripts/
+│   ├── build.sh              # EDK II compilation
+│   ├── qemu-run.sh           # QEMU test harness with vTPM
+│   ├── nvram-recovery.py     # NVRAM backup/restore
+│   ├── validate-environment.sh # Pre-flight checks
+│   └── audit-log.sh          # Append-only execution audit logger
+├── tests/                    # Unit, integration, and corpus tests
+├── .github/workflows/        # CI/CD pipeline
+├── CONTRIBUTING.md
+├── SECURITY.md
+└── README.md
 ```

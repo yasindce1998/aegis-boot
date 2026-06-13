@@ -64,4 +64,3 @@ InstallSetVariableHook (
 
 #endif // __SET_VARIABLE_HOOK_H__
 
-// Made with Bob

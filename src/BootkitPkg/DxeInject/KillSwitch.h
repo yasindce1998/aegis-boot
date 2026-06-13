@@ -183,4 +183,3 @@ ParseUuidString (
 
 #endif // __KILL_SWITCH_H__
 
-// Made with Bob

@@ -468,4 +468,3 @@ LogTelemetry (
   //
 }
 
-// Made with Bob

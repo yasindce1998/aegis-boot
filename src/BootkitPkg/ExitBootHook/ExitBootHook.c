@@ -483,4 +483,3 @@ LogExitBootTelemetry (
   //
 }
 
-// Made with Bob

@@ -143,4 +143,3 @@ LogTpmKillSwitchStatus (
 
 #endif // __TPM_KILL_SWITCH_H__
 
-// Made with Bob

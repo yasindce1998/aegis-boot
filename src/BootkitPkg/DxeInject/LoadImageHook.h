@@ -65,4 +65,3 @@ InstallLoadImageHook (
 
 #endif // __LOAD_IMAGE_HOOK_H__
 
-// Made with Bob

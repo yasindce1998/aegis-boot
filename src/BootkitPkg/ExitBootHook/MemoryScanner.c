@@ -386,4 +386,3 @@ LocateOsKernel (
   return EFI_NOT_FOUND;
 }
 
-// Made with Bob

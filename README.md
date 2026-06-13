@@ -93,12 +93,10 @@ Aegis-Boot safely models Tactics, Techniques, and Procedures (TTPs) from known i
 
 ```
 aegis-boot/
-├── docs/                           # Documentation
-│   ├── IMPLEMENTATION_COMPLETE.md  # Complete implementation details
+├── docs/
 │   ├── SETUP.md                    # Environment setup guide
 │   ├── ARCHITECTURE.md             # Technical architecture
-│   ├── TESTING.md                  # Testing strategy
-│   └── audit/                      # Immutable execution logs
+│   └── TESTING.md                  # Testing strategy
 ├── src/
 │   ├── BootkitPkg/                 # UEFI bootkit emulation
 │   │   ├── DxeInject/              # DXE phase injection + kill-switches
@@ -109,13 +107,9 @@ aegis-boot/
 │   └── AegisScanner/               # Detection engine (Python)
 │       ├── scanner.py              # Main scanner
 │       ├── detectors/              # Detection modules
-│       │   ├── pcr_detector.py     # PCR analysis
-│       │   ├── memory_detector.py  # Memory artifact detection
-│       │   ├── hook_detector.py    # Boot Services hook detection
-│       │   └── eventlog_detector.py # Event log forensics
 │       └── reports/                # Report generation
 ├── scripts/
-│   ├── build.sh                    # EDK II compilation + SBOM
+│   ├── build.sh                    # EDK II compilation
 │   ├── qemu-run.sh                 # QEMU test harness with vTPM
 │   ├── nvram-recovery.py           # NVRAM backup/restore
 │   ├── audit-log.sh                # GPG-signed audit logging
@@ -123,12 +117,8 @@ aegis-boot/
 ├── tests/                          # Test suite
 │   ├── unit/                       # Unit tests
 │   ├── integration/                # Integration tests
-│   ├── run_tests.py                # Test runner
-│   └── requirements.txt            # Test dependencies
-├── .gitignore
-├── .env.example
-├── README.md
-├── QUICKSTART.md
+│   └── corpus/                     # Test corpus samples
+├── .github/workflows/              # CI/CD pipeline
 ├── CONTRIBUTING.md
 └── SECURITY.md
 ```
@@ -278,26 +268,13 @@ python run_tests.py --corpus        # Corpus validation
 
 ## 📝 Documentation
 
-### Core Documentation
-- [`README.md`](README.md) - This file (project overview)
-- [`QUICKSTART.md`](QUICKSTART.md) - Quick start guide
-- [`docs/COMPLETE_IMPLEMENTATION_GUIDE.md`](docs/COMPLETE_IMPLEMENTATION_GUIDE.md) - **Complete implementation guide (750 lines)**
-- [`docs/PROJECT_COMPLETION_SUMMARY.md`](docs/PROJECT_COMPLETION_SUMMARY.md) - **Project completion summary**
-- [`docs/SETUP.md`](docs/SETUP.md) - Detailed setup instructions
+- [`docs/SETUP.md`](docs/SETUP.md) - Environment setup instructions
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - System architecture
-- [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) - Technical implementation
 - [`docs/TESTING.md`](docs/TESTING.md) - Testing strategy
-
-### Component Documentation
 - [`src/AegisScanner/README.md`](src/AegisScanner/README.md) - Scanner documentation
 - [`tests/README.md`](tests/README.md) - Test suite guide
-- [`tests/corpus/README.md`](tests/corpus/README.md) - Test corpus guide
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) - Contribution guidelines
 - [`SECURITY.md`](SECURITY.md) - Security policy
-
-### Implementation Summaries
-- [`docs/FINAL_IMPLEMENTATION_SUMMARY.md`](docs/FINAL_IMPLEMENTATION_SUMMARY.md) - Phases 1-6 summary
-- [`docs/ALL_PHASES_COMPLETE.md`](docs/ALL_PHASES_COMPLETE.md) - All phases roadmap
 
 ## 🤝 Contributing
 
@@ -364,22 +341,3 @@ This implementation successfully models the following real-world threats:
 - Complete CI/CD pipeline for bootkit research
 - Ground truth validation framework
 
----
-
-## 📝 Recent Updates
-
-### Version 2.0.1 - May 12, 2026
-**Code Quality Improvements:**
-- ✅ Refactored `correlate_findings()` in report generator
-- ✅ Reduced function complexity by 62% (from ~8 to ~3)
-- ✅ Improved code maintainability with 5 new helper methods
-- ✅ Enhanced performance with optimized dictionary operations
-- ✅ Added comprehensive documentation and type hints
-
-See [REFACTORING_CHANGELOG.md](docs/REFACTORING_CHANGELOG.md) for detailed changes.
-
----
-
-**Version:** 2.0.1
-**Last Updated:** May 12, 2026
-**Status:** ✅ All 15 Improvements Complete + Code Quality Enhancements - Production Ready

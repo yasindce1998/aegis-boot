@@ -346,16 +346,15 @@ PRs are evaluated on:
 
 ### Contact
 
-- **Principal Investigator**: [Contact Information]
-- **Technical Lead**: [Contact Information]
-- **IRB Questions**: [IRB Contact]
+- **Principal Investigator**: Yasin (yasindce1998@gmail.com)
+- **Institution**: Dead Lock Corp
 
 ### Communication Channels
 
 - **Issues**: GitHub Issues (for approved contributors only)
 - **Discussions**: GitHub Discussions (for approved contributors only)
-- **Security**: security@[institution].edu
-- **IRB**: irb@[institution].edu
+- **Security**: security@deadlockcorp.edu
+- **IRB**: irb@deadlockcorp.edu
 
 ## License and Legal
 

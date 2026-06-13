@@ -52,7 +52,7 @@ If you discover a security vulnerability in Aegis-Boot:
 - Exploit the vulnerability
 
 #### ✅ DO:
-1. **Email**: security@[institution].edu
+1. **Email**: security@deadlockcorp.edu
 2. **Subject**: "Aegis-Boot Security Vulnerability Report"
 3. **Include**:
    - Detailed description of the vulnerability
@@ -332,22 +332,9 @@ Immediate public disclosure (without embargo) if:
 
 ### Primary Contacts
 
-- **Security Issues**: security@[institution].edu
-- **Principal Investigator**: [PI Email]
-- **Information Security Officer**: [ISO Email]
-- **IRB Chair**: irb@[institution].edu
-
-### PGP Keys
-
-For encrypted communication:
-
-```
-Principal Investigator:
-[PGP Key Fingerprint]
-
-Information Security Officer:
-[PGP Key Fingerprint]
-```
+- **Security Issues**: security@deadlockcorp.edu
+- **Principal Investigator**: yasindce1998@gmail.com
+- **IRB Chair**: irb@deadlockcorp.edu
 
 ### Response Times
 
