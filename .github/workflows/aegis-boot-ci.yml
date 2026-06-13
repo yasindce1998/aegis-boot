@@ -52,7 +52,7 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential uuid-dev iasl nasm python3-distutils
+          sudo apt-get install -y build-essential uuid-dev iasl nasm python3-setuptools
       
       - name: Build EDK II BaseTools
         run: |

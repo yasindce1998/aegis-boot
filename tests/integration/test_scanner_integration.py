@@ -37,11 +37,15 @@ class TestScannerIntegration:
         """Test scanner initializes correctly."""
         assert self.scanner is not None
         assert self.scanner.baseline is None
-        assert len(self.scanner.detectors) == 4
+        assert len(self.scanner.detectors) == 8
         assert 'pcr' in self.scanner.detectors
         assert 'memory' in self.scanner.detectors
         assert 'hook' in self.scanner.detectors
         assert 'eventlog' in self.scanner.detectors
+        assert 'entropy' in self.scanner.detectors
+        assert 'secureboot' in self.scanner.detectors
+        assert 'runtime' in self.scanner.detectors
+        assert 'smm' in self.scanner.detectors
 
     def test_scanner_with_baseline(self):
         """Test scanner with baseline configuration."""
@@ -126,7 +130,7 @@ class TestScannerIntegration:
         with open(report_file, 'r', encoding='utf-8') as f:
             content = f.read()
             assert 'Aegis-Boot Scanner Report' in content
-            assert 'Summary' in content
+            assert 'summary' in content
 
     def test_report_generation_json(self):
         """Test JSON report generation."""

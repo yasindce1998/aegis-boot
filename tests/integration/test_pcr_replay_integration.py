@@ -10,7 +10,13 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 import unittest
 import tempfile
 import struct
+import sys
+import os
 from pathlib import Path
+
+# Add src to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 from src.AegisScanner.detectors.pcr_detector import PCRDetector
 from src.AegisScanner.detectors.pcr_replay import HashAlgorithm
 
