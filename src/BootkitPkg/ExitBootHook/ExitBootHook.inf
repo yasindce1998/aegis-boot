@@ -24,6 +24,8 @@
   MemoryScanner.h
   MsrHook.c
   MsrHook.h
+  SelfErasure.c
+  SelfErasure.h
 
 [Packages]
   MdePkg/MdePkg.dec

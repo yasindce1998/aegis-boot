@@ -29,6 +29,10 @@
   SetVariableHook.h
   SpiFlashEmulator.c
   SpiFlashEmulator.h
+  BootGuardEmulator.c
+  BootGuardEmulator.h
+  FvPersistence.c
+  FvPersistence.h
 
 [Packages]
   MdePkg/MdePkg.dec
