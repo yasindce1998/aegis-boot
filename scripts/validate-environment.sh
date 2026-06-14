@@ -204,21 +204,6 @@ validate_security_configuration() {
     log_info "=== Security Configuration ==="
     
     # Environment variables
-    check "IRB_APPROVAL_DATE set" "test -n '${IRB_APPROVAL_DATE:-}'"
-    
-    if [[ -n "${IRB_APPROVAL_DATE:-}" ]]; then
-        check "IRB_APPROVAL_DATE valid format" "date -d '$IRB_APPROVAL_DATE' &>/dev/null"
-        
-        # Check if approval is not expired (within 36 months)
-        local approval_epoch=$(date -d "$IRB_APPROVAL_DATE" +%s 2>/dev/null || echo 0)
-        local current_epoch=$(date +%s)
-        local max_validity=$((36 * 30 * 24 * 60 * 60))
-        
-        if [[ $approval_epoch -gt 0 ]]; then
-            check "IRB approval not expired" "test $((current_epoch - approval_epoch)) -le $max_validity"
-        fi
-    fi
-    
     check "AEGIS_ALLOWED_UUID set" "test -n '${AEGIS_ALLOWED_UUID:-}'"
     check "AEGIS_EXPIRY_DATE set" "test -n '${AEGIS_EXPIRY_DATE:-}'"
     

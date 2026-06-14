@@ -8,7 +8,6 @@ A production-ready UEFI bootkit research platform for studying firmware-level se
 
 This project is developed **strictly for academic research purposes** under institutional oversight:
 
-- ✅ Requires formal IRB (Institutional Review Board) approval before execution
 - ✅ Must operate in air-gapped, virtualized environments only
 - ✅ Contains multiple hardware-rooted kill-switches preventing unauthorized execution
 - ❌ NOT for weaponization, deployment, or malicious use
@@ -120,14 +119,7 @@ aegis-boot/
 
 ### Prerequisites
 
-**⚠️ STOP: Do not proceed without IRB approval ⚠️**
-
-1. **Legal Clearance**
-   - Formal IRB/ethics committee approval
-   - Signed institutional agreements
-   - Legal counsel review
-
-2. **Hardware Requirements**
+1. **Hardware Requirements**
    - Air-gapped lab environment or isolated VLAN
    - Dedicated test machines with TPM 2.0
    - Minimum 16GB RAM, 100GB storage
@@ -244,7 +236,7 @@ python run_tests.py --corpus        # Corpus validation
 ## 🤝 Contributing
 
 This is a controlled research project. Contributions are limited to:
-- IRB-approved researchers
+- Authorized researchers on the project team
 - Institutional collaborators with signed agreements
 - Peer reviewers during academic publication process
 
@@ -275,8 +267,7 @@ If you discover a novel vulnerability during research:
 **Institution:** Dead Lock Corp 
 **Email:** yasindce1998@gmail.com
 
-**For vulnerability reports:** security@deadlockcorp.edu  
-**For IRB inquiries:** irb@deadlockcorp.edu
+**For vulnerability reports:** security@deadlockcorp.edu
 
 ## ⚠️ Disclaimer
 

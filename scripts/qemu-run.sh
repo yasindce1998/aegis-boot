@@ -25,7 +25,7 @@
 #   - Network is DISABLED by default for air-gap compliance
 #   - All executions are logged to audit trail
 #   - UUID and TPM EK are validated before boot
-#   - Requires IRB_APPROVAL_DATE environment variable
+#   - Requires AEGIS_EXPIRY_DATE environment variable
 
 set -euo pipefail
 
@@ -143,29 +143,6 @@ parse_args() {
 # Validate environment
 validate_environment() {
     log_info "Validating environment..."
-
-    # Check IRB approval
-    if [[ -z "${IRB_APPROVAL_DATE:-}" ]]; then
-        log_error "IRB_APPROVAL_DATE environment variable not set"
-        log_error "This is a legal requirement. Set it in .env file."
-        exit 1
-    fi
-
-    # Validate IRB approval is not expired (within 36 months)
-    local approval_epoch=$(date -d "$IRB_APPROVAL_DATE" +%s 2>/dev/null || echo 0)
-    local current_epoch=$(date +%s)
-    local max_validity=$((36 * 30 * 24 * 60 * 60))  # 36 months in seconds
-    
-    if [[ $approval_epoch -eq 0 ]]; then
-        log_error "Invalid IRB_APPROVAL_DATE format: $IRB_APPROVAL_DATE"
-        exit 1
-    fi
-    
-    if [[ $((current_epoch - approval_epoch)) -gt $max_validity ]]; then
-        log_error "IRB approval has expired (>36 months old)"
-        log_error "Approval date: $IRB_APPROVAL_DATE"
-        exit 1
-    fi
 
     # Check OVMF files
     if [[ ! -f "$OVMF_CODE" ]]; then

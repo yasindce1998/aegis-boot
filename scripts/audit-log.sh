@@ -3,7 +3,7 @@
 # Aegis-Boot Audit Logging System
 #
 # This script provides append-only, GPG-signed audit logging for all
-# project activities. Required for IRB compliance and forensic traceability.
+# project activities. Required for forensic traceability.
 #
 # USAGE:
 #   ./audit-log.sh [OPTIONS] "log message"
@@ -141,7 +141,6 @@ All audit logs are:
 ## Compliance
 
 These logs are required for:
-- IRB compliance and oversight
 - Forensic traceability
 - Academic peer review
 - Incident response
@@ -151,12 +150,10 @@ These logs are required for:
 Access to audit logs is restricted to:
 - Principal Investigator
 - Information Security Officer
-- IRB reviewers (upon request)
 
 **DO NOT MODIFY OR DELETE AUDIT LOGS**
 
 Unauthorized modification or deletion of audit logs may constitute:
-- IRB protocol violation
 - Research misconduct
 - Legal liability
 EOF
@@ -309,11 +306,11 @@ list_recent_entries() {
     ' "$log_file"
 }
 
-# Export audit logs for IRB review
+# Export audit logs for review
 export_for_review() {
     local output_dir="${1:-$PROJECT_ROOT/audit-export-$(date +%Y%m%d)}"
-    
-    log_info "Exporting audit logs for IRB review..."
+
+    log_info "Exporting audit logs for review..."
     mkdir -p "$output_dir"
 
     # Copy all log files

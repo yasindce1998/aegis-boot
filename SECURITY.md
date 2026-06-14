@@ -290,7 +290,7 @@ Immediate public disclosure (without embargo) if:
 - Unauthorized access to repository
 - Build system compromise
 - Unintended network access
-- IRB violation
+- Policy violation
 
 #### Level 3: Medium
 - Failed security controls
@@ -310,7 +310,7 @@ Immediate public disclosure (without embargo) if:
 #### Investigation (1-24 hours)
 1. Assess scope and impact
 2. Identify root cause
-3. Determine if IRB notification required
+3. Determine if institutional notification required
 4. Prepare incident report
 5. Notify affected parties
 
@@ -326,7 +326,7 @@ Immediate public disclosure (without embargo) if:
 2. Update documentation
 3. Implement preventive measures
 4. Train team on lessons learned
-5. Review with IRB if required
+5. Review with stakeholders if required
 
 ## Security Contacts
 
@@ -334,7 +334,6 @@ Immediate public disclosure (without embargo) if:
 
 - **Security Issues**: security@deadlockcorp.edu
 - **Principal Investigator**: yasindce1998@gmail.com
-- **IRB Chair**: irb@deadlockcorp.edu
 
 ### Response Times
 
@@ -349,7 +348,7 @@ Immediate public disclosure (without embargo) if:
 
 - **Quarterly**: Internal security review
 - **Bi-annually**: External security audit
-- **Annually**: IRB compliance review
+- **Annually**: Full compliance review
 - **Ad-hoc**: After significant changes
 
 ### Audit Scope
@@ -365,7 +364,6 @@ Immediate public disclosure (without embargo) if:
 
 ### Regulatory Compliance
 
-- IRB/Ethics Committee approval
 - Institutional security policies
 - Data protection regulations
 - Export control regulations (if applicable)
@@ -384,7 +382,7 @@ This security policy is reviewed and updated:
 - Quarterly (minimum)
 - After security incidents
 - When new threats emerge
-- Upon IRB requirement changes
+- When institutional requirements change
 
 **Last Updated**: May 11, 2026  
 **Version**: 1.0.0  

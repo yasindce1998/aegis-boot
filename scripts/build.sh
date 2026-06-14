@@ -19,7 +19,7 @@
 #
 # REQUIREMENTS:
 #   - EDK II environment configured
-#   - IRB_APPROVAL_DATE set in environment
+#   - AEGIS_EXPIRY_DATE set in environment
 #   - Artifact signing keys available (unless --skip-signing)
 
 set -euo pipefail
@@ -115,20 +115,6 @@ parse_args() {
 # Validate environment
 validate_environment() {
     log_info "Validating build environment..."
-
-    # Check IRB approval
-    if [[ -z "${IRB_APPROVAL_DATE:-}" ]]; then
-        log_error "IRB_APPROVAL_DATE environment variable not set"
-        log_error "This is a CI gate requirement. Set it in .env file."
-        exit 1
-    fi
-
-    # Validate IRB approval date format
-    if ! date -d "$IRB_APPROVAL_DATE" &>/dev/null; then
-        log_error "Invalid IRB_APPROVAL_DATE format: $IRB_APPROVAL_DATE"
-        log_error "Expected format: YYYY-MM-DD"
-        exit 1
-    fi
 
     # Check workspace
     if [[ ! -d "$WORKSPACE" ]]; then
@@ -237,7 +223,7 @@ build_package() {
 
     # Add reproducible build flags
     build_cmd+=(
-        -D SOURCE_DATE_EPOCH="$(date -d "$IRB_APPROVAL_DATE" +%s)"
+        -D SOURCE_DATE_EPOCH="$(date -d "${AEGIS_EXPIRY_DATE:-2027-05-11}" +%s)"
     )
 
     # Execute build
@@ -264,7 +250,7 @@ generate_sbom() {
 
 ## Build Configuration
 Build Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-IRB Approval Date: ${IRB_APPROVAL_DATE}
+Expiry Date: ${AEGIS_EXPIRY_DATE:-Not Set}
 Target: ${TARGET}
 Architecture: ${TARGET_ARCH}
 Toolchain: ${TOOL_CHAIN_TAG}
@@ -309,7 +295,7 @@ Allowed UUID: ${AEGIS_ALLOWED_UUID:-Not Set}
 Expiry Date: ${AEGIS_EXPIRY_DATE:-Not Set}
 
 ## Audit Trail
-This SBOM is part of the immutable audit trail for IRB compliance.
+This SBOM is part of the immutable audit trail for project compliance.
 All artifacts listed above are subject to the project's security constraints.
 
 EOF

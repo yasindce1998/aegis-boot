@@ -6,23 +6,21 @@ Thank you for your interest in contributing to the Aegis-Boot project. This docu
 
 **Aegis-Boot is a controlled academic research project with strict ethical and legal constraints.** Contributions are limited to authorized personnel who have:
 
-1. ✅ Formal IRB (Institutional Review Board) approval
-2. ✅ Signed institutional agreements
-3. ✅ Completed required ethics training
-4. ✅ Been granted explicit access by the Principal Investigator
+1. ✅ Signed institutional agreements
+2. ✅ Completed required ethics training
+3. ✅ Been granted explicit access by the Principal Investigator
 
 **If you do not meet these requirements, you cannot contribute to this project.**
 
 ## Contribution Eligibility
 
 ### Authorized Contributors
-- IRB-approved researchers on the project team
+- Approved researchers on the project team
 - Institutional collaborators with signed agreements
 - Peer reviewers during academic publication process (read-only)
 - Security researchers with coordinated disclosure agreements
 
 ### Prohibited Contributors
-- ❌ Individuals without IRB approval
 - ❌ Contributors outside the institutional framework
 - ❌ Anyone seeking to weaponize or misuse the research
 - ❌ Contributors who cannot comply with ethical constraints
@@ -46,7 +44,7 @@ All contributions must adhere to the project's ethical framework:
 - Data exfiltration capabilities
 - Destructive payloads
 - 0-day exploitation (outside coordinated disclosure)
-- Any feature that violates IRB approval scope
+- Any feature that violates the project's approved scope
 
 ## Contribution Process
 
@@ -54,7 +52,6 @@ All contributions must adhere to the project's ethical framework:
 
 Before making any contribution:
 
-- [ ] Verify you have IRB approval
 - [ ] Review the project's ethical guidelines
 - [ ] Understand the security constraints
 - [ ] Read the technical documentation
@@ -101,7 +98,6 @@ All contributions undergo rigorous review:
 
 3. **Principal Investigator Approval**
    - Final ethical review
-   - IRB compliance confirmation
    - Merge authorization
 
 ## Coding Standards
@@ -196,7 +192,6 @@ ensure attestation data integrity. This enhances the defensive
 telemetry capabilities.
 
 Refs: #42
-IRB-Approved: Yes
 ```
 
 ### Commit Signing (REQUIRED)
@@ -303,7 +298,7 @@ Brief description of changes
 ## Ethical Compliance
 - [ ] Changes maintain all safety mechanisms
 - [ ] No weaponization features added
-- [ ] IRB scope not exceeded
+- [ ] Project scope not exceeded
 - [ ] Defensive-only purpose maintained
 
 ## Testing
@@ -333,7 +328,7 @@ PRs are evaluated on:
 3. **Security**: Preserves safety mechanisms
 4. **Testing**: Adequate test coverage
 5. **Documentation**: Complete and accurate
-6. **IRB Compliance**: Within approved scope
+6. **Scope Compliance**: Within approved scope
 
 ## Getting Help
 
@@ -354,7 +349,6 @@ PRs are evaluated on:
 - **Issues**: GitHub Issues (for approved contributors only)
 - **Discussions**: GitHub Discussions (for approved contributors only)
 - **Security**: security@deadlockcorp.edu
-- **IRB**: irb@deadlockcorp.edu
 
 ## License and Legal
 
@@ -372,7 +366,6 @@ Violations of these guidelines may result in:
 
 - Contribution rejection
 - Access revocation
-- IRB notification
 - Institutional disciplinary action
 - Legal consequences (for serious violations)
 

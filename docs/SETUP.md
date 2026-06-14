@@ -1,6 +1,6 @@
 # Aegis-Boot: Detailed Environment Setup Guide
 
-**⚠️ PREREQUISITE: This guide assumes you have obtained formal IRB approval and legal clearance. Do not proceed without proper authorization. ⚠️**
+**⚠️ PREREQUISITE: This guide assumes you have proper authorization and legal clearance. Do not proceed without proper authorization. ⚠️**
 
 ## Table of Contents
 1. [System Requirements](#system-requirements)
@@ -55,7 +55,6 @@ gcc --version  # Should be >= 11.0
 ## 2. Pre-Installation Checklist
 
 ### Legal and Compliance
-- [ ] IRB approval obtained and documented
 - [ ] Legal counsel review completed
 - [ ] Institutional agreements signed
 - [ ] Air-gapped lab environment prepared
@@ -347,7 +346,7 @@ export VTPM_STATE_DIR=~/aegis-workspace/vtpm-state
 # Security Configuration (CRITICAL: Set these values)
 export AEGIS_ALLOWED_UUID="00000000-0000-0000-0000-000000000000"  # Replace with actual UUID
 export AEGIS_EXPIRY_DATE="2027-05-11"  # Replace with actual expiry
-export IRB_APPROVAL_DATE="2026-05-11"  # Replace with actual IRB date
+export PROJECT_START_DATE="2026-05-11"  # Replace with actual project start date
 
 # Audit Logging
 export AUDIT_LOG_DIR=~/aegis-workspace/aegis-boot/docs/audit
@@ -395,14 +394,14 @@ cat > ~/aegis-workspace/aegis-boot/docs/HARDWARE_BINDINGS.md <<EOF
 
 ## Expiry Configuration
 - **Project Start**: 2026-05-11
-- **IRB Approval Date**: 2026-05-11
+- **Project Start Date**: 2026-05-11
 - **Project Expiry**: 2027-05-11
 - **Data Retention End**: 2029-05-11
 
 ## Emergency Contacts
 - **Principal Investigator**: [REDACTED]
 - **Information Security Officer**: [REDACTED]
-- **IRB Chair**: [REDACTED]
+- **Security Officer**: [REDACTED]
 EOF
 ```
 
@@ -430,7 +429,7 @@ Expected output:
 ✓ GPG signing configured
 ✓ Artifact signing keys present
 ✓ Environment variables set
-✓ IRB approval date valid
+✓ Project start date valid
 ```
 
 ### 7.2 Build Test
