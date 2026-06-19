@@ -91,6 +91,119 @@ jobs:
           name: bootkit-binaries
           path: edk2/Build/BootkitPkg/DEBUG_GCC5/X64/*.efi
 
+  build-bootkit-aarch64:
+    name: Build AARCH64 Bootkit
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Aegis-Boot
+        uses: actions/checkout@v4
+        with:
+          path: aegis-boot
+
+      - name: Cache EDK II
+        uses: actions/cache@v4
+        id: cache-edk2-aarch64
+        with:
+          path: edk2
+          key: edk2-aarch64-${{ env.EDK2_VERSION }}-${{ hashFiles('aegis-boot/src/**/*.c', 'aegis-boot/src/**/*.h') }}
+          restore-keys: |
+            edk2-aarch64-${{ env.EDK2_VERSION }}-
+            edk2-full-${{ env.EDK2_VERSION }}-
+
+      - name: Setup EDK II
+        if: steps.cache-edk2-aarch64.outputs.cache-hit != 'true'
+        env:
+          GIT_TERMINAL_PROMPT: 0
+        run: |
+          rm -rf edk2
+          git clone --depth 1 --branch ${{ env.EDK2_VERSION }} \
+            https://github.com/tianocore/edk2.git
+          cd edk2
+          git submodule init \
+            BaseTools/Source/C/BrotliCompress/brotli \
+            MdeModulePkg/Library/BrotliCustomDecompressLib/brotli \
+            CryptoPkg/Library/OpensslLib/openssl \
+            CryptoPkg/Library/MbedTlsLib/mbedtls \
+            ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3 \
+            MdePkg/Library/BaseFdtLib/libfdt \
+            MdePkg/Library/MipiSysTLib/mipisyst \
+            RedfishPkg/Library/JsonLib/jansson \
+            SecurityPkg/DeviceSecurity/SpdmLib/libspdm \
+            MdeModulePkg/Universal/RegularExpressionDxe/oniguruma \
+            UnitTestFrameworkPkg/Library/CmockaLib/cmocka
+          for i in {1..3}; do
+            git submodule update --recursive && break || {
+              echo "Submodule update attempt $i failed, retrying..."
+              sleep 10
+            }
+          done
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential uuid-dev iasl nasm python3-setuptools \
+            gcc-aarch64-linux-gnu
+
+      - name: Build EDK II BaseTools
+        run: |
+          cd edk2
+          make -C BaseTools
+          source edksetup.sh
+
+      - name: Copy Aegis-Boot Packages
+        run: |
+          cp -r aegis-boot/src/BootkitPkg edk2/
+          cp -r aegis-boot/src/AttestationPkg edk2/
+
+      - name: Build AARCH64 Bootkit Package
+        run: |
+          cd edk2
+          rm -f Conf/BuildEnv.sh
+          source edksetup.sh
+          export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
+          build -a AARCH64 -t GCC5 -p BootkitPkg/BootkitPkgAarch64.dsc
+
+      - name: Upload AARCH64 Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootkit-aarch64-binaries
+          path: edk2/Build/BootkitPkgAarch64/DEBUG_GCC5/AARCH64/*.efi
+
+  build-legacy-bootkit:
+    name: Build Legacy BIOS Bootkit
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install NASM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nasm
+
+      - name: Build Legacy MBR/VBR
+        run: |
+          cd src/LegacyBootkit
+          make
+
+      - name: Verify Output Size
+        run: |
+          # MBR and VBR must be exactly 512 bytes
+          MBR_SIZE=$(wc -c < build/legacy/mbr_infector.bin)
+          VBR_SIZE=$(wc -c < build/legacy/vbr_hook.bin)
+          echo "MBR size: $MBR_SIZE bytes"
+          echo "VBR size: $VBR_SIZE bytes"
+          [ "$MBR_SIZE" -eq 512 ] || { echo "ERROR: MBR is not 512 bytes"; exit 1; }
+          [ "$VBR_SIZE" -eq 512 ] || { echo "ERROR: VBR is not 512 bytes"; exit 1; }
+
+      - name: Upload Legacy Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-bootkit-binaries
+          path: build/legacy/*.bin
+
   test-scanner:
     name: Test Detection Scanner
     runs-on: ubuntu-24.04

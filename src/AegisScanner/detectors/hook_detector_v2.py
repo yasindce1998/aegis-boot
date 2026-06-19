@@ -111,6 +111,36 @@ class HookDetectorV2:
         }
     }
 
+    # ARM64 (AARCH64) trampoline patterns
+    AARCH64_TRAMPOLINE_PATTERNS = {
+        # LDR X16, [PC+8]; BR X16; <64-bit addr> (16 bytes)
+        'ldr_x16_br': {
+            'pattern': [0x50, 0x00, 0x00, 0x58],  # LDR X16, #8 (little-endian)
+            'br_opcode': [0x00, 0x02, 0x1F, 0xD6],  # BR X16
+            'size': 16,
+            'confidence': 0.95
+        },
+        # LDR X17, [PC+8]; BR X17; <64-bit addr> (16 bytes)
+        'ldr_x17_br': {
+            'pattern': [0x51, 0x00, 0x00, 0x58],  # LDR X17, #8
+            'br_opcode': [0x20, 0x02, 0x1F, 0xD6],  # BR X17
+            'size': 16,
+            'confidence': 0.90
+        },
+    }
+
+    # RISC-V (RV64) trampoline patterns
+    RISCV_TRAMPOLINE_PATTERNS = {
+        # AUIPC t1, 0; LD t1, 8(t1); JALR x0, t1, 0; <64-bit addr> (20 bytes)
+        'auipc_ld_jalr': {
+            'pattern': [0x17, 0x03, 0x00, 0x00],  # AUIPC t1, 0
+            'ld_opcode': [0x03, 0x33, 0x83, 0x00],  # LD t1, 8(t1)
+            'jalr_opcode': [0x67, 0x00, 0x03, 0x00],  # JALR x0, t1, 0
+            'size': 20,
+            'confidence': 0.95
+        },
+    }
+
     def __init__(self, baseline: Optional[Dict] = None, strict_mode: bool = False):
         """
         Initialize enhanced hook detector.
@@ -454,25 +484,27 @@ class HookDetectorV2:
 
     def _detect_trampoline_patterns(self, data: bytes, address: int) -> List[TrampolinePattern]:
         """
-        Detect trampoline patterns at given address.
-        
+        Detect trampoline patterns at given address (x86_64, ARM64, RISC-V).
+
         Args:
             data: Memory dump data
             address: Address to scan
-            
+
         Returns:
             List of detected trampolines
         """
         trampolines = []
-        
+
+        # --- x86_64 patterns ---
+
         # Check MOV RAX, imm64; JMP RAX pattern (14 bytes)
         pattern = self.TRAMPOLINE_PATTERNS['mov_rax_jmp']
         if (address + pattern['size'] <= len(data) and
             data[address:address+2] == bytes(pattern['pattern'])):
-            
+
             # Extract target address from MOV RAX, imm64
             target = struct.unpack('<Q', data[address+2:address+10])[0]
-            
+
             # Verify JMP RAX follows
             if data[address+10:address+12] == bytes(pattern['jmp_opcode']):
                 trampolines.append(TrampolinePattern(
@@ -481,18 +513,18 @@ class HookDetectorV2:
                     pattern_type='mov_rax_jmp',
                     confidence=pattern['confidence']
                 ))
-        
+
         # Check JMP [RIP+offset] pattern (6 bytes)
         pattern = self.TRAMPOLINE_PATTERNS['jmp_rip_indirect']
         if (address + pattern['size'] <= len(data) and
             data[address:address+2] == bytes(pattern['pattern'])):
-            
+
             # Extract RIP-relative offset
             rip_offset = struct.unpack('<i', data[address+2:address+6])[0]
-            
+
             # Calculate target (RIP after instruction + offset)
             target_addr = address + 6 + rip_offset
-            
+
             # Read target from memory
             if target_addr + 8 <= len(data):
                 target = struct.unpack('<Q', data[target_addr:target_addr+8])[0]
@@ -502,7 +534,59 @@ class HookDetectorV2:
                     pattern_type='jmp_rip_indirect',
                     confidence=pattern['confidence']
                 ))
-        
+
+        # --- ARM64 (AARCH64) patterns ---
+
+        # LDR X16, [PC+8]; BR X16; <64-bit addr> (16 bytes)
+        pattern = self.AARCH64_TRAMPOLINE_PATTERNS['ldr_x16_br']
+        if (address + pattern['size'] <= len(data) and
+            data[address:address+4] == bytes(pattern['pattern'])):
+
+            # Verify BR X16 follows
+            if data[address+4:address+8] == bytes(pattern['br_opcode']):
+                # Extract 64-bit target address at offset +8
+                target = struct.unpack('<Q', data[address+8:address+16])[0]
+                trampolines.append(TrampolinePattern(
+                    address=address,
+                    target=target,
+                    pattern_type='aarch64_ldr_x16_br',
+                    confidence=pattern['confidence']
+                ))
+
+        # LDR X17, [PC+8]; BR X17 variant
+        pattern = self.AARCH64_TRAMPOLINE_PATTERNS['ldr_x17_br']
+        if (address + pattern['size'] <= len(data) and
+            data[address:address+4] == bytes(pattern['pattern'])):
+
+            if data[address+4:address+8] == bytes(pattern['br_opcode']):
+                target = struct.unpack('<Q', data[address+8:address+16])[0]
+                trampolines.append(TrampolinePattern(
+                    address=address,
+                    target=target,
+                    pattern_type='aarch64_ldr_x17_br',
+                    confidence=pattern['confidence']
+                ))
+
+        # --- RISC-V (RV64) patterns ---
+
+        # AUIPC t1, 0; LD t1, 8(t1); JALR x0, t1, 0; <64-bit addr> (20 bytes)
+        pattern = self.RISCV_TRAMPOLINE_PATTERNS['auipc_ld_jalr']
+        if (address + pattern['size'] <= len(data) and
+            data[address:address+4] == bytes(pattern['pattern'])):
+
+            # Verify LD t1, 8(t1) follows
+            if data[address+4:address+8] == bytes(pattern['ld_opcode']):
+                # Verify JALR x0, t1, 0 follows
+                if data[address+8:address+12] == bytes(pattern['jalr_opcode']):
+                    # Extract 64-bit target address at offset +12
+                    target = struct.unpack('<Q', data[address+12:address+20])[0]
+                    trampolines.append(TrampolinePattern(
+                        address=address,
+                        target=target,
+                        pattern_type='riscv_auipc_ld_jalr',
+                        confidence=pattern['confidence']
+                    ))
+
         return trampolines
 
     def _compare_with_baseline(self, bst: Dict):

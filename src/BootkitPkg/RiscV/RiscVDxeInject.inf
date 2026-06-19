@@ -1,0 +1,43 @@
+## @file
+#  RISC-V DXE Injection Module
+#
+#  RISC-V specific Boot Services table hooking for research.
+#
+#  Copyright (c) 2026, Aegis-Boot Research Project
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = RiscVDxeInject
+  FILE_GUID                      = B2C3D4E5-2222-3333-4444-RISCVDXE0001
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 3.0
+  ENTRY_POINT                    = RiscVDxeInjectEntry
+
+[Sources]
+  RiscVDxeInject.c
+  RiscVDxeInject.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+  TimerLib
+
+[Depex]
+  TRUE
+
+[BuildOptions]
+  GCC:*_*_RISCV64_CC_FLAGS = -DAEGIS_BOOT_RESEARCH=1 -Wall -Wno-unused-parameter

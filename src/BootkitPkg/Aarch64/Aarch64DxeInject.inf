@@ -1,0 +1,48 @@
+## @file
+#  AARCH64 DXE Injection Module
+#
+#  ARM64-specific Boot Services table hooking for research.
+#
+#  Copyright (c) 2026, Aegis-Boot Research Project
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Aarch64DxeInject
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AARCH64DXE01
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 2.0
+  ENTRY_POINT                    = Aarch64DxeInjectEntry
+
+[Sources]
+  Aarch64DxeInject.c
+  Aarch64DxeInject.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+  TimerLib
+
+[Protocols]
+  gEfiSmbiosProtocolGuid
+  gEfiTcg2ProtocolGuid
+
+[Depex]
+  TRUE
+
+[BuildOptions]
+  GCC:*_*_AARCH64_CC_FLAGS = -DAEGIS_BOOT_RESEARCH=1 -Wall -Wno-unused-parameter

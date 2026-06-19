@@ -29,6 +29,7 @@ try:
     from .detectors.fv_parser import FirmwareVolumeParser
     from .detectors.spi_integrity_detector import SpiIntegrityDetector
     from .detectors.self_erasure_detector import SelfErasureDetector
+    from .detectors.mbr_detector import MBRDetector
     from .pcr_oracle.oracle import PCROracle
     from .differ import FirmwareDiffer, SemanticAnalyzer, DiffReportGenerator, BaselineDB
     from .reports.report_generator import ReportGenerator
@@ -44,6 +45,7 @@ except ImportError:
     from detectors.fv_parser import FirmwareVolumeParser
     from detectors.spi_integrity_detector import SpiIntegrityDetector
     from detectors.self_erasure_detector import SelfErasureDetector
+    from detectors.mbr_detector import MBRDetector
     from pcr_oracle.oracle import PCROracle
     from differ import FirmwareDiffer, SemanticAnalyzer, DiffReportGenerator, BaselineDB
     from reports.report_generator import ReportGenerator
@@ -105,6 +107,7 @@ class AegisScanner:
             'firmware_volume': FirmwareVolumeParser(),
             'spi_integrity': SpiIntegrityDetector(self.baseline),
             'self_erasure': SelfErasureDetector(self.baseline),
+            'mbr': MBRDetector(self.baseline),
             'pcr_oracle': PCROracle(),
             'firmware_differ': FirmwareDifferDetector(diff_baseline),
         }
@@ -333,7 +336,7 @@ def main():
         choices=[
             'pcr', 'memory', 'hook', 'eventlog', 'entropy',
             'secureboot', 'runtime', 'smm', 'firmware_volume',
-            'spi_integrity', 'self_erasure', 'pcr_oracle',
+            'spi_integrity', 'self_erasure', 'mbr', 'pcr_oracle',
             'firmware_differ'
         ],
         help='Types of scans to perform (default: all)'
