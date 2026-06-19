@@ -12,10 +12,16 @@ import hashlib
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
-from ..detectors.fv_parser import FirmwareVolumeParser, FirmwareVolume, FirmwareFile
-from ..detectors.pcr_replay import PCRReplayEngine, HashAlgorithm
-from .measurement_policy import MeasurementPolicy, MeasurementEvent, EventType
-from .platform_profiles import PlatformProfile
+try:
+    from ..detectors.fv_parser import FirmwareVolumeParser, FirmwareVolume, FirmwareFile
+    from ..detectors.pcr_replay import PCRReplayEngine, HashAlgorithm
+    from .measurement_policy import MeasurementPolicy, MeasurementEvent, EventType
+    from .platform_profiles import PlatformProfile
+except ImportError:
+    from detectors.fv_parser import FirmwareVolumeParser, FirmwareVolume, FirmwareFile
+    from detectors.pcr_replay import PCRReplayEngine, HashAlgorithm
+    from pcr_oracle.measurement_policy import MeasurementPolicy, MeasurementEvent, EventType
+    from pcr_oracle.platform_profiles import PlatformProfile
 
 
 class FirmwareMeasurer:

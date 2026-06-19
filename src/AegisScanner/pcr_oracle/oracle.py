@@ -12,10 +12,16 @@ import json
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
-from ..detectors.pcr_replay import PCRReplayEngine, HashAlgorithm
-from .firmware_measurer import FirmwareMeasurer
-from .measurement_policy import MeasurementEvent
-from .platform_profiles import PlatformProfile, get_profile
+try:
+    from ..detectors.pcr_replay import PCRReplayEngine, HashAlgorithm
+    from .firmware_measurer import FirmwareMeasurer
+    from .measurement_policy import MeasurementEvent
+    from .platform_profiles import PlatformProfile, get_profile
+except ImportError:
+    from detectors.pcr_replay import PCRReplayEngine, HashAlgorithm
+    from pcr_oracle.firmware_measurer import FirmwareMeasurer
+    from pcr_oracle.measurement_policy import MeasurementEvent
+    from pcr_oracle.platform_profiles import PlatformProfile, get_profile
 
 
 class PCROracle:
