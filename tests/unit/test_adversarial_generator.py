@@ -9,22 +9,25 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 """
 
 import struct
+import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from src.AegisScanner.generator.templates import (
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
+
+from AegisScanner.generator.templates import (
     Architecture, BootkitTemplate, HookSlot, HookTarget,
     BST_FUNCTION_OFFSETS, TemplateLibrary,
 )
-from src.AegisScanner.generator.mutator import (
+from AegisScanner.generator.mutator import (
     BootkitMutator, MutationResult, MutationStrategy,
 )
-from src.AegisScanner.generator.generator import (
+from AegisScanner.generator.generator import (
     AdversarialGenerator, GenerationConfig, ARCH_STRATEGIES,
 )
-from src.AegisScanner.generator.evaluator import (
+from AegisScanner.generator.evaluator import (
     DetectionEvaluator, EvaluationReport,
 )
 

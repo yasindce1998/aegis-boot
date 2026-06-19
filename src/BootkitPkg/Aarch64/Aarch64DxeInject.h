@@ -75,6 +75,8 @@ typedef struct {
   EFI_IMAGE_START           OriginalStartImage;
   UINTN                     HookCount;
   UINT64                    InstallTime;
+  AARCH64_TRAMPOLINE        LoadImageTrampoline;
+  AARCH64_TRAMPOLINE        StartImageTrampoline;
 } AARCH64_HOOK_CONTEXT;
 
 //

@@ -309,10 +309,10 @@ jobs:
         run: |
           python -c "
           import sys, json
-          sys.path.insert(0, '.')
-          from src.AegisScanner.generator import AdversarialGenerator, DetectionEvaluator
-          from src.AegisScanner.generator.generator import GenerationConfig
-          from src.AegisScanner.generator.templates import Architecture
+          sys.path.insert(0, 'src')
+          from AegisScanner.generator import AdversarialGenerator, DetectionEvaluator
+          from AegisScanner.generator.generator import GenerationConfig
+          from AegisScanner.generator.templates import Architecture
           from pathlib import Path
 
           gen = AdversarialGenerator(seed=42)

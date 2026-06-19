@@ -133,7 +133,11 @@ InstallAarch64BstHooks (
   Context->OriginalLoadImage    = gBS->LoadImage;
   Context->OriginalStartImage   = gBS->StartImage;
 
-  // Install hooks
+  // Build trampolines for hook targets
+  BuildAarch64Trampoline (&Context->LoadImageTrampoline, (UINT64)(UINTN)Aarch64HookedLoadImage);
+  BuildAarch64Trampoline (&Context->StartImageTrampoline, (UINT64)(UINTN)Aarch64HookedStartImage);
+
+  // Install hooks via direct pointer replacement
   gBS->LoadImage  = Aarch64HookedLoadImage;
   gBS->StartImage = Aarch64HookedStartImage;
 
