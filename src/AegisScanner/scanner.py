@@ -35,6 +35,7 @@ try:
     from .attestation import ProvenanceExtractor, TrustScorer, SBOMGenerator, SBOMFormat, AttestationGraph
     from .introspection import IntrospectionRunner, IntrospectionConfig, EventStream, LiveDetector, LiveFinding
     from .timetravel import TraceRecorder, RecordingConfig, TraceReplayer, TraceAnalyzer, Timeline
+    from .symexec import SymbolicEngine, EfiEnvironment, PathExplorer, BehaviorReportBuilder, HookAnalyzer
     from .reports.report_generator import ReportGenerator
 except ImportError:
     from detectors.pcr_detector import PCRDetector
@@ -54,6 +55,7 @@ except ImportError:
     from attestation import ProvenanceExtractor, TrustScorer, SBOMGenerator, SBOMFormat, AttestationGraph
     from introspection import IntrospectionRunner, IntrospectionConfig, EventStream, LiveDetector, LiveFinding
     from timetravel import TraceRecorder, RecordingConfig, TraceReplayer, TraceAnalyzer, Timeline
+    from symexec import SymbolicEngine, EfiEnvironment, PathExplorer, BehaviorReportBuilder, HookAnalyzer
     from reports.report_generator import ReportGenerator
 
 
@@ -291,6 +293,94 @@ class TimeTravelDetector:
         return findings
 
 
+class SymExecDetector:
+    """Wrapper that adapts Symbolic Execution to the scanner's detect() interface."""
+
+    def detect(self, target_path: str) -> List[Dict]:
+        target = Path(target_path)
+        if not target.exists():
+            return [{
+                'detector': 'symexec',
+                'severity': 'error',
+                'title': f'Target not found: {target_path}',
+                'description': 'The specified binary does not exist.',
+                'details': {},
+            }]
+
+        try:
+            data = target.read_bytes()
+        except Exception as e:
+            return [{
+                'detector': 'symexec',
+                'severity': 'error',
+                'title': f'Failed to read target: {e}',
+                'description': str(e),
+                'details': {},
+            }]
+
+        engine = SymbolicEngine()
+        env = EfiEnvironment()
+
+        try:
+            entry = engine.load_pe(target)
+        except Exception:
+            entry = engine.load_binary(data)
+
+        engine._init_emulator(entry)
+        env.setup_tables(engine._uc)
+        for addr, handler in env.get_service_stubs().items():
+            engine.register_service_handler(addr, handler)
+
+        explorer = PathExplorer(engine, env)
+        paths = explorer.explore(entry)
+
+        hook_analyzer = HookAnalyzer()
+        for path_summary in explorer.get_hook_paths():
+            for hook_info in path_summary.hooks_installed:
+                hook_addr = hook_info.get('new_handler', 0)
+                service = hook_info.get('service', 'unknown')
+                try:
+                    hook_analyzer.analyze_hook(
+                        data[hook_addr - engine.CODE_BASE:hook_addr - engine.CODE_BASE + 0x200],
+                        hook_addr, service
+                    )
+                except Exception:
+                    pass
+
+        builder = BehaviorReportBuilder()
+        builder.set_binary_info(target.name, len(data), entry)
+        builder.add_path_results(explorer)
+        builder.add_hook_analysis(hook_analyzer)
+        builder.add_environment_results(env)
+        report = builder.build()
+
+        findings = []
+        for finding in report.findings:
+            sev_map = {0: 'info', 1: 'low', 2: 'medium', 3: 'high', 4: 'critical'}
+            findings.append({
+                'detector': 'symexec',
+                'severity': sev_map.get(finding.severity, 'medium'),
+                'title': finding.title,
+                'description': finding.description,
+                'details': finding.evidence,
+            })
+
+        if not findings:
+            findings.append({
+                'detector': 'symexec',
+                'severity': 'info',
+                'title': 'Symbolic execution analysis clean',
+                'description': (
+                    f'Explored {report.paths_explored} paths, '
+                    f'no bootkit behavior detected. '
+                    f'Confidence: {report.confidence:.1%}'
+                ),
+                'details': report.to_dict(),
+            })
+
+        return findings
+
+
 class AegisScanner:
     """Main scanner engine for bootkit detection."""
 
@@ -326,6 +416,7 @@ class AegisScanner:
             'attestation': AttestationDetector(),
             'live': IntrospectionDetector(),
             'timetravel': TimeTravelDetector(),
+            'symexec': SymExecDetector(),
         }
         self.use_enhanced_hook_detector = use_enhanced_hook_detector
         self.findings = []
@@ -554,7 +645,7 @@ def main():
             'secureboot', 'runtime', 'smm', 'firmware_volume',
             'spi_integrity', 'self_erasure', 'mbr', 'pcr_oracle',
             'firmware_differ', 'adversarial', 'attestation', 'live',
-            'timetravel',
+            'timetravel', 'symexec',
         ],
         help='Types of scans to perform (default: all)'
     )

@@ -11,7 +11,7 @@
 [Defines]
   INF_VERSION                    = 0x00010005
   BASE_NAME                      = RiscVDxeInject
-  FILE_GUID                      = B2C3D4E5-2222-3333-4444-RISCVDXE0001
+  FILE_GUID                      = B2C3D4E5-2222-3333-4444-01C5DE000001
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 3.0
   ENTRY_POINT                    = RiscVDxeInjectEntry

@@ -11,7 +11,7 @@
 [Defines]
   INF_VERSION                    = 0x00010005
   BASE_NAME                      = Aarch64DxeInject
-  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AARCH64DXE01
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AAC064DE0001
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 2.0
   ENTRY_POINT                    = Aarch64DxeInjectEntry
