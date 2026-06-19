@@ -17,8 +17,37 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_ROOT/build/e2e"
 DUMPS_DIR="$BUILD_DIR/dumps"
 
-OVMF_CODE="${OVMF_CODE:-/usr/share/OVMF/OVMF_CODE.fd}"
-OVMF_VARS_TEMPLATE="${OVMF_VARS_TEMPLATE:-/usr/share/OVMF/OVMF_VARS.fd}"
+# Auto-detect OVMF firmware paths (varies across distros/versions)
+find_ovmf_code() {
+    local candidates=(
+        "/usr/share/OVMF/OVMF_CODE_4M.fd"
+        "/usr/share/OVMF/OVMF_CODE.fd"
+        "/usr/share/edk2/ovmf/OVMF_CODE.fd"
+        "/usr/share/qemu/OVMF_CODE.fd"
+        "/usr/share/edk2-ovmf/x64/OVMF_CODE.4m.fd"
+    )
+    for f in "${candidates[@]}"; do
+        if [[ -f "$f" ]]; then echo "$f"; return 0; fi
+    done
+    return 1
+}
+
+find_ovmf_vars() {
+    local candidates=(
+        "/usr/share/OVMF/OVMF_VARS_4M.fd"
+        "/usr/share/OVMF/OVMF_VARS.fd"
+        "/usr/share/edk2/ovmf/OVMF_VARS.fd"
+        "/usr/share/qemu/OVMF_VARS.fd"
+        "/usr/share/edk2-ovmf/x64/OVMF_VARS.4m.fd"
+    )
+    for f in "${candidates[@]}"; do
+        if [[ -f "$f" ]]; then echo "$f"; return 0; fi
+    done
+    return 1
+}
+
+OVMF_CODE="${OVMF_CODE:-$(find_ovmf_code || echo "")}"
+OVMF_VARS_TEMPLATE="${OVMF_VARS_TEMPLATE:-$(find_ovmf_vars || echo "")}"
 
 QEMU_MEMORY="${QEMU_MEMORY:-512}"
 QEMU_TIMEOUT="${QEMU_TIMEOUT:-120}"
@@ -62,14 +91,18 @@ check_dependencies() {
         exit 1
     fi
 
-    if [[ ! -f "$OVMF_CODE" ]]; then
-        log_error "OVMF_CODE not found: $OVMF_CODE"
+    if [[ -z "$OVMF_CODE" || ! -f "$OVMF_CODE" ]]; then
+        log_error "OVMF_CODE not found. Searched standard paths. Install ovmf: apt-get install ovmf"
+        log_error "Or set OVMF_CODE=/path/to/OVMF_CODE.fd"
         exit 1
     fi
-    if [[ ! -f "$OVMF_VARS_TEMPLATE" ]]; then
-        log_error "OVMF_VARS not found: $OVMF_VARS_TEMPLATE"
+    if [[ -z "$OVMF_VARS_TEMPLATE" || ! -f "$OVMF_VARS_TEMPLATE" ]]; then
+        log_error "OVMF_VARS not found. Searched standard paths. Install ovmf: apt-get install ovmf"
+        log_error "Or set OVMF_VARS_TEMPLATE=/path/to/OVMF_VARS.fd"
         exit 1
     fi
+    log_info "OVMF_CODE: $OVMF_CODE"
+    log_info "OVMF_VARS: $OVMF_VARS_TEMPLATE"
 }
 
 create_esp_image() {
