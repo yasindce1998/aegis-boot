@@ -282,6 +282,63 @@ jobs:
             build/e2e/dumps/serial.log
             build/e2e/dumps/scan_results.json
 
+  adversarial-test:
+    name: Adversarial Generator Test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r tests/requirements.txt
+          pip install pytest
+
+      - name: Run Adversarial Generator Tests
+        run: |
+          pytest tests/unit/test_adversarial_generator.py -v
+
+      - name: Generate and Evaluate Corpus
+        run: |
+          python -c "
+          import sys, json
+          sys.path.insert(0, '.')
+          from src.AegisScanner.generator import AdversarialGenerator, DetectionEvaluator
+          from src.AegisScanner.generator.generator import GenerationConfig
+          from src.AegisScanner.generator.templates import Architecture
+          from pathlib import Path
+
+          gen = AdversarialGenerator(seed=42)
+          config = GenerationConfig(count=50, difficulty=4, output_dir=Path('generated_corpus'))
+          paths = gen.generate(config)
+          print(f'Generated {len(paths)} samples')
+
+          evaluator = DetectionEvaluator()
+          report = evaluator.evaluate(gen.get_results())
+          print(f'Detection rate: {report.detection_rate:.2%}')
+          print(f'Detected: {report.total_detected}/{report.total_samples}')
+
+          report.save(Path('adversarial_report.json'))
+
+          # Assert minimum detection rate
+          assert report.detection_rate >= 0.70, f'Detection rate {report.detection_rate:.2%} below 70% threshold'
+          print('PASS: Detection rate meets threshold')
+          "
+
+      - name: Upload Adversarial Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adversarial-report
+          path: adversarial_report.json
+
   security-audit:
     name: Security Audit
     runs-on: ubuntu-24.04

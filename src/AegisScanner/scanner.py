@@ -337,9 +337,24 @@ def main():
             'pcr', 'memory', 'hook', 'eventlog', 'entropy',
             'secureboot', 'runtime', 'smm', 'firmware_volume',
             'spi_integrity', 'self_erasure', 'mbr', 'pcr_oracle',
-            'firmware_differ'
+            'firmware_differ', 'adversarial',
         ],
         help='Types of scans to perform (default: all)'
+    )
+
+    parser.add_argument(
+        '--adversarial-count',
+        type=int,
+        default=50,
+        help='Number of adversarial variants to generate (default: 50)'
+    )
+
+    parser.add_argument(
+        '--adversarial-difficulty',
+        type=int,
+        default=3,
+        choices=[1, 2, 3, 4, 5],
+        help='Adversarial generation difficulty 1-5 (default: 3)'
     )
 
     parser.add_argument(
