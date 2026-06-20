@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["crates/barzakh-core", "crates/barzakh-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "BSD-2-Clause-Patent"
+authors = ["Barzakh Research Project"]

@@ -1,4 +1,8 @@
-# BarzakhScanner - Bootkit Detection Engine
+> **⚠️ LEGACY IMPLEMENTATION** — This Python scanner is kept as a reference implementation.
+> The actively maintained Rust version is at [`src/barzakh-scanner-rs/`](../barzakh-scanner-rs/).
+> New features and bug fixes target the Rust scanner only.
+
+# BarzakhScanner - Bootkit Detection Engine (Legacy)
 
 BarzakhScanner is the defensive detection component of the Barzakh project. It analyzes firmware, memory, and boot measurements to detect bootkit artifacts with high accuracy and low false positive rates.
 

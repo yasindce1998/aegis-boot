@@ -204,10 +204,10 @@ jobs:
           name: legacy-bootkit-binaries
           path: build/legacy/*.bin
 
-  test-scanner:
-    name: Test Detection Scanner
+  test-scanner-python:
+    name: Test Detection Scanner (Python - Legacy)
     runs-on: ubuntu-24.04
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -238,6 +238,77 @@ jobs:
           flags: scanner
           name: scanner-coverage
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  build-scanner-rs:
+    name: Build Rust Scanner
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/barzakh-scanner-rs
+
+      - name: Build Release Binary
+        working-directory: src/barzakh-scanner-rs
+        run: cargo build --release
+
+      - name: Upload Scanner Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: barzakh-scanner-rs
+          path: src/barzakh-scanner-rs/target/release/barzakh-cli
+
+  test-scanner-rs:
+    name: Test Rust Scanner
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/barzakh-scanner-rs
+
+      - name: Check Formatting
+        working-directory: src/barzakh-scanner-rs
+        run: cargo fmt --check
+
+      - name: Run Clippy
+        working-directory: src/barzakh-scanner-rs
+        run: cargo clippy -- -D warnings
+
+      - name: Run Tests
+        working-directory: src/barzakh-scanner-rs
+        run: cargo test
+
+  security-audit-rs:
+    name: Security Audit (Rust)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: Run Audit
+        working-directory: src/barzakh-scanner-rs
+        run: cargo audit
 
   qemu-e2e:
     name: QEMU End-to-End Test
@@ -404,7 +475,7 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-24.04
-    needs: [build-bootkit, test-scanner, qemu-e2e, documentation]
+    needs: [build-bootkit, build-scanner-rs, test-scanner-rs, qemu-e2e, documentation]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
@@ -420,6 +491,7 @@ jobs:
         run: |
           mkdir -p release
           cp -r artifacts/bootkit-binaries release/ 2>/dev/null || true
+          cp -r artifacts/barzakh-scanner-rs release/ 2>/dev/null || true
           cp -r artifacts/qemu-e2e-results release/ 2>/dev/null || true
           cp -r artifacts/documentation release/ 2>/dev/null || true
           tar -czf barzakh-release.tar.gz release/
