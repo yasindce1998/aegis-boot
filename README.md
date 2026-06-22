@@ -1,6 +1,8 @@
-# Project Barzakh
+# Project Barzakh (برزخ)
 
 <div align="center">
+
+> *"Barzakh" (برزخ) — a barrier between two realms; in Islamic eschatology, the unseen boundary separating the living world from the world of spirits. Here it stands for the barrier between offense and defense, between vulnerability and detection.*
 
 **The most comprehensive open-source UEFI firmware security research platform**
 
