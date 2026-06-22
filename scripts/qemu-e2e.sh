@@ -504,6 +504,7 @@ run_scanner() {
 
     "$scanner_bin" \
         --target "$dump_file" \
+        --report \
         --format json \
         --output scan_results.json || true
 
