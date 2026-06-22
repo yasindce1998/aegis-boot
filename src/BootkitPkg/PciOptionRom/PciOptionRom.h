@@ -54,9 +54,9 @@
 // Maximum devices to scan
 //
 #define MAX_PCI_DEVICES              16
-#define PCI_MAX_BUS                  1     // Scan bus 0 only for simulation
-#define PCI_MAX_DEV                  32
-#define PCI_MAX_FUNC                 8
+#define OPTROM_MAX_BUS               1     // Scan bus 0 only for simulation
+#define OPTROM_MAX_DEV               32
+#define OPTROM_MAX_FUNC              8
 
 //
 // Simulated ROM sizes
@@ -91,11 +91,11 @@ typedef struct {
   UINT16  MaxRuntimeSize; // In 512-byte units
   UINT16  ConfigUtilityOffset;
   UINT16  DmtfClpOffset;
-} PCI_DATA_STRUCTURE;
+} OPTROM_PCIR_DATA;
 
 typedef struct {
   PCI_ROM_HEADER       RomHeader;
-  PCI_DATA_STRUCTURE   PcirData;
+  OPTROM_PCIR_DATA     PcirData;
 } OPTION_ROM_IMAGE;
 
 #pragma pack()

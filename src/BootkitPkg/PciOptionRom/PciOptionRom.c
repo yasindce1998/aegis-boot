@@ -97,9 +97,9 @@ ScanPciDevices (
     Context->DeviceCount = 0;
     Context->RomCapableCount = 0;
 
-    for (Bus = 0; Bus < PCI_MAX_BUS; Bus++) {
-      for (Dev = 0; Dev < PCI_MAX_DEV; Dev++) {
-        for (Func = 0; Func < PCI_MAX_FUNC; Func++) {
+    for (Bus = 0; Bus < OPTROM_MAX_BUS; Bus++) {
+      for (Dev = 0; Dev < OPTROM_MAX_DEV; Dev++) {
+        for (Func = 0; Func < OPTROM_MAX_FUNC; Func++) {
           if (Context->DeviceCount >= MAX_PCI_DEVICES) {
             goto ScanDone;
           }
@@ -173,7 +173,7 @@ ConstructOptionRom (
 {
   OPTION_ROM_IMAGE     *RomImage;
   PCI_ROM_HEADER       *RomHeader;
-  PCI_DATA_STRUCTURE   *PcirData;
+  OPTROM_PCIR_DATA   *PcirData;
 
   if (Context->State < OptRomStateDevicesScanned) {
     return EFI_NOT_READY;
@@ -206,7 +206,7 @@ ConstructOptionRom (
   PcirData->Signature = PCIR_SIGNATURE;
   PcirData->VendorId = Context->Devices[Context->TargetDevice].VendorId;
   PcirData->DeviceId = Context->Devices[Context->TargetDevice].DeviceId;
-  PcirData->Length = sizeof (PCI_DATA_STRUCTURE);
+  PcirData->Length = sizeof (OPTROM_PCIR_DATA);
   PcirData->Revision = 3;
   PcirData->ClassCode[0] = Context->Devices[Context->TargetDevice].ClassCode[0];
   PcirData->ClassCode[1] = Context->Devices[Context->TargetDevice].ClassCode[1];
