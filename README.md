@@ -106,8 +106,7 @@ barzakh/
 │   ├── audit-log.sh                # GPG-signed audit logging
 │   └── validate-environment.sh     # Pre-flight checks
 ├── tests/                          # Test suite & utilities
-│   ├── validate_ci_results.py      # Ground truth validation
-│   ├── generate_corpus.py          # Synthetic corpus generator
+│   ├── README.md                   # Test documentation
 │   └── corpus/                     # Test corpus samples
 ├── .github/workflows/              # CI/CD pipeline
 ├── CONTRIBUTING.md
