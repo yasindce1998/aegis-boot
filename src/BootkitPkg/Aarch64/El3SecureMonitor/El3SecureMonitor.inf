@@ -1,0 +1,37 @@
+## @file
+# EL3 Secure Monitor Persistence Emulation Module
+#
+# Emulates ARM EL3 secure monitor persistence techniques. Models SMC handler
+# injection, PSCI function interception (CPU_ON/CPU_OFF/SYSTEM_RESET), and
+# SCR_EL3 register manipulation for TrustZone firmware persistence.
+#
+# Copyright (c) 2026, Barzakh Research Project
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = El3SecureMonitor
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AAC064DE0002
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = El3SecureMonitorEntry
+
+[Sources]
+  El3SecureMonitor.c
+  El3SecureMonitor.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+
+[Depex]
+  TRUE

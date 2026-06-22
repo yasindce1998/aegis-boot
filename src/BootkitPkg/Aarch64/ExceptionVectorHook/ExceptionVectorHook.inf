@@ -1,0 +1,37 @@
+## @file
+# Exception Vector Table Hook Emulation Module
+#
+# Emulates ARM exception vector table relocation attacks. Models VBAR_EL1/EL2/EL3
+# register manipulation, vector table cloning, and exception handler patching
+# for stealth code execution on synchronous exceptions, IRQs, and SErrors.
+#
+# Copyright (c) 2026, Barzakh Research Project
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = ExceptionVectorHook
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AAC064DE0004
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = ExceptionVectorHookEntry
+
+[Sources]
+  ExceptionVectorHook.c
+  ExceptionVectorHook.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+
+[Depex]
+  TRUE

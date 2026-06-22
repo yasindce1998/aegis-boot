@@ -33,6 +33,12 @@
 
 [Components]
   BootkitPkg/Aarch64/Aarch64DxeInject.inf
+  BootkitPkg/Aarch64/El3SecureMonitor/El3SecureMonitor.inf
+  BootkitPkg/Aarch64/TzascManipulation/TzascManipulation.inf
+  BootkitPkg/Aarch64/ExceptionVectorHook/ExceptionVectorHook.inf
+  BootkitPkg/Aarch64/DeviceTreeInject/DeviceTreeInject.inf
+  BootkitPkg/Aarch64/IbootTrustChain/IbootTrustChain.inf
+  BootkitPkg/Aarch64/SepMailboxIntercept/SepMailboxIntercept.inf
 
 [BuildOptions]
   GCC:*_*_AARCH64_CC_FLAGS = -DBARZAKH_RESEARCH=1 -Wall -Wno-unused-parameter -Werror=implicit-function-declaration -fno-stack-protector

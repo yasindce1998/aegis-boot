@@ -1,0 +1,37 @@
+## @file
+# iBoot Image4 Trust Chain Emulation Module
+#
+# Emulates Apple Silicon boot chain attacks. Models the SecureROM -> iBoot1
+# -> iBoot2 -> kernel trust chain, Image4 manifest parsing, and Checkm8-style
+# DFU exploitation for boot policy bypass.
+#
+# Copyright (c) 2026, Barzakh Research Project
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = IbootTrustChain
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AAC064DE0006
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = IbootTrustChainEntry
+
+[Sources]
+  IbootTrustChain.c
+  IbootTrustChain.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+
+[Depex]
+  TRUE

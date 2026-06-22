@@ -1,0 +1,37 @@
+## @file
+# TrustZone Address Space Controller Manipulation Module
+#
+# Emulates TZASC region repartitioning attacks. Models the TZC-400 controller
+# register block, region attribute manipulation, and secure/non-secure memory
+# boundary subversion to break TrustZone isolation.
+#
+# Copyright (c) 2026, Barzakh Research Project
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = TzascManipulation
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AAC064DE0003
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = TzascManipulationEntry
+
+[Sources]
+  TzascManipulation.c
+  TzascManipulation.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+
+[Depex]
+  TRUE

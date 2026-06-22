@@ -1,0 +1,37 @@
+## @file
+# SEP Mailbox Intercept Emulation Module
+#
+# Emulates Apple Secure Enclave Processor (SEP) mailbox communication
+# interception. Models AP<->SEP message structures, inbox/outbox FIFO
+# snooping, and key request/response hijacking.
+#
+# Copyright (c) 2026, Barzakh Research Project
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SepMailboxIntercept
+  FILE_GUID                      = A1B2C3D4-1111-2222-3333-AAC064DE0007
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = SepMailboxInterceptEntry
+
+[Sources]
+  SepMailboxIntercept.c
+  SepMailboxIntercept.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+
+[Depex]
+  TRUE
