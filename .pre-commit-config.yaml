@@ -7,24 +7,7 @@
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
 repos:
-  # Python code formatting
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        language_version: python3
-        files: ^src/BarzakhScanner/.*\.py$|^tests/.*\.py$
-
-  # Python security checks
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6
-    hooks:
-      - id: bandit
-        args: ['-c', 'pyproject.toml']
-        additional_dependencies: ['bandit[toml]']
-        files: ^src/BarzakhScanner/.*\.py$
-
-  # YAML validation
+  # YAML/JSON/TOML validation and general hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -58,13 +41,5 @@ repos:
       - id: markdownlint
         args: ['--fix']
         files: \.md$
-
-  # Python import sorting
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ['--profile', 'black']
-        files: ^src/BarzakhScanner/.*\.py$|^tests/.*\.py$
 
 

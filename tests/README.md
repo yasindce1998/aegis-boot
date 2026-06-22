@@ -1,172 +1,46 @@
 # Barzakh Test Suite
 
-Comprehensive test suite for validating bootkit detection capabilities and ensuring system integrity.
+## Scanner Tests (Rust)
 
-## Test Structure
+The primary test suite lives in the Rust workspace at `src/barzakh-scanner-rs/`.
 
-```
-tests/
-├── unit/                    # Unit tests for individual components
-│   ├── test_pcr_detector.py
-│   ├── test_memory_detector.py
-│   ├── test_hook_detector.py
-│   └── test_eventlog_detector.py
-├── integration/             # Integration tests
-│   ├── test_scanner_integration.py
-│   └── test_report_generation.py
-├── corpus/                  # Test corpus
-│   ├── infected/           # Known infected samples
-│   └── clean/              # Known clean samples
-├── fixtures/               # Test fixtures and data
-│   ├── baseline.json
-│   ├── pcr_dumps/
-│   ├── memory_dumps/
-│   └── event_logs/
-└── run_tests.py            # Test runner
+### Running Tests
 
-```
-
-## Running Tests
-
-### All Tests
 ```bash
-python tests/run_tests.py
+cd src/barzakh-scanner-rs
+
+# Run all tests
+cargo test
+
+# Check formatting & lint
+cargo fmt --check
+cargo clippy -- -D warnings
+
+# Security audit
+cargo audit
 ```
 
-### Unit Tests Only
+The Rust scanner has 22 integration tests covering all 18 detectors, baseline comparison, report generation, and corpus validation.
+
+## E2E Tests
+
+End-to-end testing runs via QEMU with a software TPM:
+
 ```bash
-python tests/run_tests.py --unit
+./scripts/qemu-e2e.sh ./binaries
 ```
 
-### Integration Tests Only
-```bash
-python tests/run_tests.py --integration
-```
-
-### Specific Test Module
-```bash
-python -m pytest tests/unit/test_pcr_detector.py -v
-```
-
-### With Coverage
-```bash
-python -m pytest tests/ --cov=src/BarzakhScanner --cov-report=html
-```
-
-## Test Requirements
-
-- Python 3.8+
-- pytest
-- pytest-cov
-- pytest-mock
-
-Install requirements:
-```bash
-pip install -r tests/requirements.txt
-```
+This boots the bootkit in QEMU, extracts memory dumps and PCR values, then runs the scanner against them.
 
 ## Test Corpus
 
-The test corpus contains:
-- **Infected samples**: Known bootkit-infected firmware/memory dumps
-- **Clean samples**: Verified clean firmware/memory dumps
-
-### Corpus Validation
-
-All corpus samples are validated against:
-- SHA256 checksums
-- Known signatures
-- Expected detection rates
+The `corpus/` directory contains synthetic firmware samples used for TPR/FPR validation:
+- Files named `*malicious*` or `*infected*` are treated as positive samples
+- All others are treated as negative (benign) samples
 
 ## CI/CD Integration
 
-Tests are automatically run on:
-- Every commit (unit tests)
-- Pull requests (full test suite)
-- Nightly builds (full suite + corpus validation)
-
-### Test Gates
-
-- **Unit Tests**: Must pass with 100% success rate
-- **Integration Tests**: Must pass with 100% success rate
-- **Detection Rate**: TPR ≥ 85%, FPR < 5%
-- **Code Coverage**: ≥ 80%
-
-## Writing New Tests
-
-### Unit Test Template
-
-```python
-import pytest
-from src.BarzakhScanner.detectors.pcr_detector import PCRDetector
-
-class TestPCRDetector:
-    def setup_method(self):
-        """Setup test fixtures."""
-        self.detector = PCRDetector()
-    
-    def test_detection(self):
-        """Test basic detection."""
-        results = self.detector.detect('path/to/sample')
-        assert len(results) > 0
-```
-
-### Integration Test Template
-
-```python
-import pytest
-from src.BarzakhScanner.scanner import BarzakhScanner
-
-class TestScannerIntegration:
-    def test_full_scan(self):
-        """Test complete scan workflow."""
-        scanner = BarzakhScanner()
-        results = scanner.scan('path/to/sample')
-        assert 'summary' in results
-        assert 'findings' in results
-```
-
-## Test Data Management
-
-Test data is managed separately and not committed to the repository due to size constraints.
-
-Download test data:
-```bash
-./scripts/download-test-data.sh
-```
-
-## Performance Benchmarks
-
-Tests include performance benchmarks to ensure scanner efficiency:
-- Scan time < 30 seconds per sample
-- Memory usage < 500MB
-- Report generation < 5 seconds
-
-## Troubleshooting
-
-### Tests Failing
-
-1. Verify test data is downloaded
-2. Check Python version (3.8+)
-3. Ensure all dependencies are installed
-4. Review test logs in `tests/logs/`
-
-### Corpus Issues
-
-If corpus validation fails:
-1. Re-download corpus: `./scripts/download-test-data.sh --force`
-2. Verify checksums: `python tests/verify_corpus.py`
-3. Report issues to maintainers
-
-## Contributing
-
-When adding new features:
-1. Write unit tests first (TDD)
-2. Ensure tests pass locally
-3. Add integration tests if needed
-4. Update this README if test structure changes
-
----
-
-Copyright (c) 2026, Barzakh Research Project  
-SPDX-License-Identifier: BSD-2-Clause-Patent
+Tests run automatically via `.github/workflows/barzakh-ci.yml`:
+- `test-scanner-rs`: fmt check, clippy, cargo test
+- `security-audit-rs`: cargo audit
+- `qemu-e2e`: full end-to-end with QEMU + swtpm

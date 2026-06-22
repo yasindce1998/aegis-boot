@@ -61,6 +61,9 @@ ENV/
 *.egg-info/
 dist/
 *.egg
+.pytest_cache/
+.hypothesis/
+generated_corpus/
 
 # Logs and Databases
 *.log
@@ -173,9 +176,8 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Rust (if used for scanner)
+# Rust
 target/
-Cargo.lock
 
 # Go (if used for tooling)
 vendor/

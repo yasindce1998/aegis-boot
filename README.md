@@ -98,16 +98,16 @@ barzakh/
 │   │   └── EventLogExtractor/      # TCG event log parsing
 │   └── barzakh-scanner-rs/           # Detection engine (Rust)
 │       ├── crates/barzakh-core/    # Library: 18 detectors + reports
-│       └── crates/barzakh-scanner/     # CLI binary
+│       └── crates/barzakh-cli/         # CLI binary
 ├── scripts/
 │   ├── build.sh                    # EDK II compilation
 │   ├── qemu-run.sh                 # QEMU test harness with vTPM
-│   ├── nvram-recovery.py           # NVRAM backup/restore
+│   ├── qemu-e2e.sh                 # End-to-end testing
 │   ├── audit-log.sh                # GPG-signed audit logging
 │   └── validate-environment.sh     # Pre-flight checks
-├── tests/                          # Test suite
-│   ├── unit/                       # Unit tests
-│   ├── integration/                # Integration tests
+├── tests/                          # Test suite & utilities
+│   ├── validate_ci_results.py      # Ground truth validation
+│   ├── generate_corpus.py          # Synthetic corpus generator
 │   └── corpus/                     # Test corpus samples
 ├── .github/workflows/              # CI/CD pipeline
 ├── CONTRIBUTING.md

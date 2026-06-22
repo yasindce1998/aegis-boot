@@ -190,11 +190,11 @@ run_scanner() {
     PCR_DUMP=$(cat "$DUMPS_DIR/latest_pcrs.txt")
     SCAN_RESULT="$RESULTS_DIR/scan-$(date +%Y%m%d-%H%M%S).json"
     
-    python3 "$PROJECT_ROOT/src/BarzakhScanner/scanner.py" \
-        "$MEMORY_DUMP" \
-        --pcrs "$PCR_DUMP" \
-        --output "$SCAN_RESULT" \
+    "$PROJECT_ROOT/src/barzakh-scanner-rs/target/release/barzakh-scanner" \
+        --target "$MEMORY_DUMP" \
+        --report \
         --format json \
+        --output "$SCAN_RESULT" \
         --verbose
     
     if [ $? -eq 0 ]; then
@@ -213,8 +213,9 @@ generate_report() {
     SCAN_RESULT=$(cat "$RESULTS_DIR/latest_scan.txt")
     HTML_REPORT="${SCAN_RESULT%.json}.html"
     
-    python3 "$PROJECT_ROOT/src/BarzakhScanner/reports/report_generator.py" \
-        "$SCAN_RESULT" \
+    "$PROJECT_ROOT/src/barzakh-scanner-rs/target/release/barzakh-scanner" \
+        --target "$SCAN_RESULT" \
+        --report \
         --format html \
         --output "$HTML_REPORT"
     
