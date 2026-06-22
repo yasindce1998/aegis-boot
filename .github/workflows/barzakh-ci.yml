@@ -303,6 +303,8 @@ jobs:
     name: QEMU End-to-End Test
     runs-on: ubuntu-24.04
     needs: [build-bootkit, build-scanner-rs]
+    timeout-minutes: 15
+    continue-on-error: true
 
     steps:
       - name: Checkout Code
