@@ -80,6 +80,13 @@ trap cleanup EXIT
 
 check_dependencies() {
     local missing=()
+
+    if [[ "${CI:-}" == "true" ]]; then
+        # CI fast path only needs the scanner binary (pre-downloaded or cargo)
+        log_info "CI mode — skipping QEMU dependency checks"
+        return 0
+    fi
+
     for cmd in qemu-system-x86_64 mtools mcopy mformat socat swtpm; do
         if ! command -v "$cmd" &>/dev/null; then
             missing+=("$cmd")
@@ -346,8 +353,8 @@ create_synthetic_dump() {
     local dump_file="$1"
     local binaries_dir="${BINARIES_DIR:-}"
 
-    # Create a 16MB synthetic memory image with bootkit patterns
-    dd if=/dev/zero of="$dump_file" bs=1M count=16 status=none
+    # Create a 4MB synthetic memory image with bootkit patterns
+    dd if=/dev/zero of="$dump_file" bs=1M count=4 status=none
 
     # --- Boot Services Table at 0x1000 ---
     # Signature "BOOTSERV" (8 bytes) - detector reads as uint64 LE = 0x56524553544f4f42
@@ -389,7 +396,7 @@ create_synthetic_dump() {
             if [[ -f "$efi" ]]; then
                 local efi_size
                 efi_size=$(stat -c%s "$efi" 2>/dev/null || echo "0")
-                if [[ $efi_size -gt 0 && $((offset + efi_size)) -lt $((16 * 1048576)) ]]; then
+                if [[ $efi_size -gt 0 && $((offset + efi_size)) -lt $((4 * 1048576)) ]]; then
                     dd if="$efi" of="$dump_file" bs=1 seek=$offset conv=notrunc status=none
                     offset=$((offset + efi_size + 4096))
                 fi
@@ -397,32 +404,32 @@ create_synthetic_dump() {
         done
     fi
 
-    # --- Firmware Volume header at 0x800000 (for FV parser) ---
+    # --- Firmware Volume header at 0x300000 (for FV parser) ---
     # Zero vector (16 bytes) + GUID (16 bytes) + FV length + signature + attributes + header length
     # FV GUID (EFI_FIRMWARE_FILE_SYSTEM2_GUID)
     printf '\x78\xe5\x8c\x8c\x3d\x8a\x1c\x4f\x99\x35\x89\x61\x85\xc3\x2d\xd3' | \
-        dd of="$dump_file" bs=1 seek=$((0x800010)) conv=notrunc status=none
+        dd of="$dump_file" bs=1 seek=$((0x300010)) conv=notrunc status=none
     # FV length (64KB = 0x10000) at offset +0x20
-    printf '\x00\x00\x01\x00\x00\x00\x00\x00' | dd of="$dump_file" bs=1 seek=$((0x800020)) conv=notrunc status=none
+    printf '\x00\x00\x01\x00\x00\x00\x00\x00' | dd of="$dump_file" bs=1 seek=$((0x300020)) conv=notrunc status=none
     # _FVH signature at +0x28
-    printf '_FVH' | dd of="$dump_file" bs=1 seek=$((0x800028)) conv=notrunc status=none
+    printf '_FVH' | dd of="$dump_file" bs=1 seek=$((0x300028)) conv=notrunc status=none
     # Attributes at +0x2C
-    printf '\xff\xfe\x04\x00' | dd of="$dump_file" bs=1 seek=$((0x80002C)) conv=notrunc status=none
+    printf '\xff\xfe\x04\x00' | dd of="$dump_file" bs=1 seek=$((0x30002C)) conv=notrunc status=none
     # Header length (0x48) at +0x30
-    printf '\x48\x00' | dd of="$dump_file" bs=1 seek=$((0x800030)) conv=notrunc status=none
+    printf '\x48\x00' | dd of="$dump_file" bs=1 seek=$((0x300030)) conv=notrunc status=none
 
-    # --- PE/COFF DXE driver image at 0x900000 ---
-    printf 'MZ' | dd of="$dump_file" bs=1 seek=$((0x900000)) conv=notrunc status=none
+    # --- PE/COFF DXE driver image at 0x350000 ---
+    printf 'MZ' | dd of="$dump_file" bs=1 seek=$((0x350000)) conv=notrunc status=none
     # e_lfanew at MZ+0x3C pointing to PE sig at offset 0x80
-    printf '\x80\x00\x00\x00' | dd of="$dump_file" bs=1 seek=$((0x90003C)) conv=notrunc status=none
+    printf '\x80\x00\x00\x00' | dd of="$dump_file" bs=1 seek=$((0x35003C)) conv=notrunc status=none
     # PE signature
-    printf 'PE\x00\x00' | dd of="$dump_file" bs=1 seek=$((0x900080)) conv=notrunc status=none
+    printf 'PE\x00\x00' | dd of="$dump_file" bs=1 seek=$((0x350080)) conv=notrunc status=none
     # Machine: x86_64 (0x8664) at PE+4
-    printf '\x64\x86' | dd of="$dump_file" bs=1 seek=$((0x900084)) conv=notrunc status=none
+    printf '\x64\x86' | dd of="$dump_file" bs=1 seek=$((0x350084)) conv=notrunc status=none
 
-    # --- Serial log at high address ---
+    # --- Serial log near end of image ---
     if [[ -f "$BUILD_DIR/serial.log" ]]; then
-        dd if="$BUILD_DIR/serial.log" of="$dump_file" bs=1 seek=$((0xF00000)) conv=notrunc status=none 2>/dev/null || true
+        dd if="$BUILD_DIR/serial.log" of="$dump_file" bs=1 seek=$((0x3E0000)) conv=notrunc status=none 2>/dev/null || true
     fi
 
     log_info "Synthetic dump created with embedded bootkit patterns"
@@ -487,17 +494,27 @@ run_scanner() {
     log_info "Running barzakh-scanner against memory dump..."
 
     local dump_file="$DUMPS_DIR/memory-dump.bin"
-    local scanner_bin="$PROJECT_ROOT/src/barzakh-scanner-rs/target/release/barzakh-scanner"
+    local scanner_bin=""
+
+    # Check for pre-downloaded artifact binary first (CI), then local build
+    if [[ -f "$PROJECT_ROOT/binaries/barzakh-scanner" ]]; then
+        scanner_bin="$PROJECT_ROOT/binaries/barzakh-scanner"
+        chmod +x "$scanner_bin"
+        log_info "Using pre-built scanner: $scanner_bin"
+    elif [[ -f "$PROJECT_ROOT/src/barzakh-scanner-rs/target/release/barzakh-scanner" ]]; then
+        scanner_bin="$PROJECT_ROOT/src/barzakh-scanner-rs/target/release/barzakh-scanner"
+    fi
 
     if [[ ! -f "$dump_file" ]]; then
         log_error "Memory dump not found: $dump_file"
         return 1
     fi
 
-    if [[ ! -f "$scanner_bin" ]]; then
+    if [[ -z "$scanner_bin" || ! -f "$scanner_bin" ]]; then
         log_info "Building barzakh-scanner..."
         cd "$PROJECT_ROOT/src/barzakh-scanner-rs"
         cargo build --release
+        scanner_bin="$PROJECT_ROOT/src/barzakh-scanner-rs/target/release/barzakh-scanner"
     fi
 
     cd "$PROJECT_ROOT"
@@ -506,7 +523,7 @@ run_scanner() {
         --target "$dump_file" \
         --report \
         --format json \
-        --output scan_results.json || true
+        --output scan_results.json
 
     if [[ -f "scan_results.json" ]]; then
         cp scan_results.json "$DUMPS_DIR/scan_results.json"
@@ -531,8 +548,8 @@ validate_results() {
         log_success "Validation PASSED"
         return 0
     else
-        log_warning "Validation did not pass (expected during initial integration)"
-        return 0
+        log_error "Validation FAILED"
+        return 1
     fi
 }
 
@@ -552,48 +569,69 @@ main() {
     # Export for use in synthetic dump creation
     BINARIES_DIR="$binaries_dir"
 
-    log_info "=== Barzakh QEMU End-to-End Test ==="
-    log_info "Binaries: $binaries_dir"
-    log_info "QEMU Memory: ${QEMU_MEMORY}MB"
-    log_info "Timeout: ${QEMU_TIMEOUT}s"
-    echo
-
     # Setup
     rm -rf "$BUILD_DIR"
     mkdir -p "$BUILD_DIR" "$DUMPS_DIR"
 
-    check_dependencies
-    create_esp_image "$binaries_dir"
-    start_swtpm
-    launch_qemu
-    wait_for_boot
+    if [[ "${CI:-}" == "true" ]]; then
+        # CI fast path: skip QEMU (DxeInject can't run on stock OVMF),
+        # go directly to synthetic dump + scanner validation
+        log_info "=== Barzakh E2E Test (CI Fast Path) ==="
+        log_info "Binaries: $binaries_dir"
+        echo
 
-    # Extract artifacts
-    dump_memory || true
-    dump_pcrs || true
+        check_dependencies
+        create_synthetic_dump "$DUMPS_DIR/memory-dump.bin"
+        dump_pcrs || true
+        run_scanner
+        validate_results
 
-    # Copy serial log to dumps
-    cp "$BUILD_DIR/serial.log" "$DUMPS_DIR/serial.log" 2>/dev/null || true
+        echo
+        log_info "=== Artifacts ==="
+        ls -la "$DUMPS_DIR"/ 2>/dev/null || true
+        echo
+        log_success "=== E2E Test Complete (CI) ==="
+    else
+        # Full QEMU path for local development
+        log_info "=== Barzakh QEMU End-to-End Test ==="
+        log_info "Binaries: $binaries_dir"
+        log_info "QEMU Memory: ${QEMU_MEMORY}MB"
+        log_info "Timeout: ${QEMU_TIMEOUT}s"
+        echo
 
-    # Stop QEMU if still running
-    if [[ -n "${QEMU_PID:-}" ]] && kill -0 "$QEMU_PID" 2>/dev/null; then
-        log_info "Stopping QEMU..."
-        echo "quit" | socat - UNIX-CONNECT:"$BUILD_DIR/monitor.sock" 2>/dev/null || true
-        sleep 2
-        kill "$QEMU_PID" 2>/dev/null || true
-        wait "$QEMU_PID" 2>/dev/null || true
-        QEMU_PID=""
+        check_dependencies
+        create_esp_image "$binaries_dir"
+        start_swtpm
+        launch_qemu
+        wait_for_boot
+
+        # Extract artifacts
+        dump_memory || true
+        dump_pcrs || true
+
+        # Copy serial log to dumps
+        cp "$BUILD_DIR/serial.log" "$DUMPS_DIR/serial.log" 2>/dev/null || true
+
+        # Stop QEMU if still running
+        if [[ -n "${QEMU_PID:-}" ]] && kill -0 "$QEMU_PID" 2>/dev/null; then
+            log_info "Stopping QEMU..."
+            echo "quit" | socat - UNIX-CONNECT:"$BUILD_DIR/monitor.sock" 2>/dev/null || true
+            sleep 2
+            kill "$QEMU_PID" 2>/dev/null || true
+            wait "$QEMU_PID" 2>/dev/null || true
+            QEMU_PID=""
+        fi
+
+        # Run scanner and validate
+        run_scanner
+        validate_results
+
+        echo
+        log_info "=== Artifacts ==="
+        ls -la "$DUMPS_DIR"/ 2>/dev/null || true
+        echo
+        log_success "=== QEMU E2E Test Complete ==="
     fi
-
-    # Run scanner and validate
-    run_scanner
-    validate_results
-
-    echo
-    log_info "=== Artifacts ==="
-    ls -la "$DUMPS_DIR"/ 2>/dev/null || true
-    echo
-    log_success "=== QEMU E2E Test Complete ==="
 }
 
 main "$@"

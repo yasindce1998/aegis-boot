@@ -16,6 +16,7 @@ jobs:
   build-bootkit:
     name: Build UEFI Bootkit
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     
     steps:
       - name: Checkout Barzakh
@@ -93,6 +94,7 @@ jobs:
   build-bootkit-aarch64:
     name: Build AARCH64 Bootkit
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Barzakh
@@ -172,6 +174,7 @@ jobs:
   build-legacy-bootkit:
     name: Build Legacy BIOS Bootkit
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
 
     steps:
       - name: Checkout Code
@@ -206,6 +209,7 @@ jobs:
   build-scanner-rs:
     name: Build Rust Scanner
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Code
@@ -232,6 +236,7 @@ jobs:
   test-scanner-rs:
     name: Test Rust Scanner
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Code
@@ -262,6 +267,7 @@ jobs:
   adversary-test:
     name: Adversary Red-Team Tests
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     needs: [build-scanner-rs]
 
     steps:
@@ -287,6 +293,7 @@ jobs:
   security-audit-rs:
     name: Security Audit (Rust)
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Code
@@ -303,25 +310,11 @@ jobs:
     name: QEMU End-to-End Test
     runs-on: ubuntu-24.04
     needs: [build-bootkit, build-scanner-rs]
-    timeout-minutes: 15
-    continue-on-error: true
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src/barzakh-scanner-rs
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-system-x86 ovmf mtools swtpm socat tpm2-tools
 
       - name: Download Bootkit Artifacts
         uses: actions/download-artifact@v4
@@ -329,7 +322,18 @@ jobs:
           name: bootkit-binaries
           path: ./binaries
 
-      - name: Run QEMU E2E Test
+      - name: Download Scanner Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: barzakh-scanner-rs
+          path: ./binaries
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 tpm2-tools
+
+      - name: Run E2E Test
         run: |
           chmod +x scripts/qemu-e2e.sh
           ./scripts/qemu-e2e.sh ./binaries
@@ -342,12 +346,12 @@ jobs:
           path: |
             build/e2e/dumps/memory-dump.bin
             build/e2e/dumps/pcrs.json
-            build/e2e/dumps/serial.log
             build/e2e/dumps/scan_results.json
 
   documentation:
     name: Build Documentation
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
 
     steps:
       - name: Checkout Code
@@ -368,6 +372,7 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     needs: [build-bootkit, build-scanner-rs, test-scanner-rs, qemu-e2e, documentation]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
