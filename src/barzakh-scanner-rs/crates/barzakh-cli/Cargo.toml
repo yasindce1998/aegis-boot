@@ -11,8 +11,13 @@ path = "src/main.rs"
 
 [dependencies]
 barzakh-core = { path = "../barzakh-core" }
+barzakh-adversary = { path = "../barzakh-adversary" }
 clap = { version = "4", features = ["derive"] }
 serde_json = "1"
+serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 anyhow = "1"
+colored = "2"
+indicatif = "0.17"
+tabled = "0.16"
