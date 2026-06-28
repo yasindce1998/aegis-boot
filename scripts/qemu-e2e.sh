@@ -519,10 +519,11 @@ run_scanner() {
 
     cd "$PROJECT_ROOT"
 
+    # Scanner exits non-zero when a bootkit is detected, which is expected in E2E
     "$scanner_bin" scan \
         --target "$dump_file" \
         --report scan_results.json \
-        --format json
+        --format json || true
 
     if [[ -f "scan_results.json" ]]; then
         cp scan_results.json "$DUMPS_DIR/scan_results.json"
