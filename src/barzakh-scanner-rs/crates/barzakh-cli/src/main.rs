@@ -2,24 +2,20 @@ use std::path::PathBuf;
 use std::process;
 
 use anyhow::Result;
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use tabled::{Table, Tabled};
 use tracing_subscriber::EnvFilter;
 
-use barzakh_adversary::deploy::esp_image::EspImageBuilder;
-use barzakh_adversary::deploy::qemu::{self, QemuConfig};
-use barzakh_adversary::validate::runner::validate_all;
-use barzakh_adversary::{create_all_payloads, Arch, PayloadConfig};
 use barzakh_core::{BarzakhScanner, Baseline, ReportFormat, Severity};
 
 #[derive(Parser)]
 #[command(
     name = "barzakh",
     about = "Barzakh — UEFI Firmware Security Analysis Platform",
-    long_about = "A comprehensive UEFI bootkit detection engine with 30 security detectors,\n\
-                  adversary payload generation, QEMU integration, and firmware analysis tools.",
+    long_about = "A comprehensive UEFI bootkit detection engine with 30 security detectors\n\
+                  for firmware integrity verification and threat analysis.",
     version,
     propagate_version = true
 )]
@@ -49,28 +45,10 @@ enum Commands {
     /// Validate scanner detection accuracy against corpus
     Validate(ValidateArgs),
 
-    /// Red-team adversary payload generation
-    Adversary {
-        #[command(subcommand)]
-        command: AdversaryCommands,
-    },
-
     /// List and inspect security detectors
     Detectors {
         #[command(subcommand)]
         command: DetectorCommands,
-    },
-
-    /// QEMU firmware emulation integration
-    Qemu {
-        #[command(subcommand)]
-        command: QemuCommands,
-    },
-
-    /// Build EFI System Partition images
-    Esp {
-        #[command(subcommand)]
-        command: EspCommands,
     },
 
     /// Display platform information and statistics
@@ -176,80 +154,6 @@ struct ValidateArgs {
     json: bool,
 }
 
-// ─── Adversary ───────────────────────────────────────────────────────────────
-
-#[derive(Subcommand)]
-enum AdversaryCommands {
-    /// Generate a specific adversary payload
-    Generate(AdversaryGenerateArgs),
-
-    /// List all available adversary payloads
-    List,
-
-    /// Generate a full test corpus (malicious + clean pairs)
-    Corpus(AdversaryCorpusArgs),
-
-    /// Validate payloads against the scanner
-    Validate(AdversaryValidateArgs),
-}
-
-#[derive(Parser)]
-struct AdversaryGenerateArgs {
-    /// Payload name (use 'adversary list' to see available)
-    #[arg(short, long)]
-    payload: String,
-
-    /// Output path for generated binary
-    #[arg(short, long)]
-    output: PathBuf,
-
-    /// Target architecture
-    #[arg(short, long, value_enum, default_value = "x86-64")]
-    arch: ArchArg,
-
-    /// Image size in bytes
-    #[arg(short, long, default_value = "65536")]
-    size: usize,
-}
-
-#[derive(Parser)]
-struct AdversaryCorpusArgs {
-    /// Output directory for corpus files
-    #[arg(short, long, default_value = "corpus")]
-    output: PathBuf,
-}
-
-#[derive(Parser)]
-struct AdversaryValidateArgs {
-    /// Directory containing generated corpus dumps
-    #[arg(short, long)]
-    corpus: PathBuf,
-
-    /// Output results as JSON
-    #[arg(long)]
-    json: bool,
-}
-
-#[derive(Clone, ValueEnum)]
-enum ArchArg {
-    #[value(name = "x86-64")]
-    X86_64,
-    #[value(name = "aarch64")]
-    Aarch64,
-    #[value(name = "riscv64")]
-    RiscV64,
-}
-
-impl From<ArchArg> for Arch {
-    fn from(a: ArchArg) -> Self {
-        match a {
-            ArchArg::X86_64 => Arch::X86_64,
-            ArchArg::Aarch64 => Arch::Aarch64,
-            ArchArg::RiscV64 => Arch::RiscV64,
-        }
-    }
-}
-
 // ─── Detectors ───────────────────────────────────────────────────────────────
 
 #[derive(Subcommand)]
@@ -268,74 +172,6 @@ enum DetectorCommands {
     },
 }
 
-// ─── QEMU ────────────────────────────────────────────────────────────────────
-
-#[derive(Subcommand)]
-enum QemuCommands {
-    /// Show QEMU launch configuration for a firmware image
-    Run(QemuRunArgs),
-
-    /// Dump memory from a QEMU instance
-    Dump(QemuDumpArgs),
-}
-
-#[derive(Parser)]
-struct QemuRunArgs {
-    /// ESP disk image to boot
-    #[arg(short, long)]
-    esp: PathBuf,
-
-    /// Target architecture
-    #[arg(short, long, value_enum, default_value = "x86-64")]
-    arch: ArchArg,
-
-    /// OVMF/firmware path
-    #[arg(short, long)]
-    firmware: Option<String>,
-
-    /// VM memory in MB
-    #[arg(short, long, default_value = "256")]
-    memory: u32,
-
-    /// Timeout in seconds
-    #[arg(short, long, default_value = "30")]
-    timeout: u32,
-}
-
-#[derive(Parser)]
-struct QemuDumpArgs {
-    /// Output path for memory dump
-    #[arg(short, long)]
-    output: PathBuf,
-
-    /// Target architecture
-    #[arg(short, long, value_enum, default_value = "x86-64")]
-    arch: ArchArg,
-}
-
-// ─── ESP ─────────────────────────────────────────────────────────────────────
-
-#[derive(Subcommand)]
-enum EspCommands {
-    /// Build an ESP image with an embedded payload
-    Build(EspBuildArgs),
-}
-
-#[derive(Parser)]
-struct EspBuildArgs {
-    /// Path to payload binary to embed
-    #[arg(short, long)]
-    payload: PathBuf,
-
-    /// Output ESP image path
-    #[arg(short, long, default_value = "esp.img")]
-    output: PathBuf,
-
-    /// ESP image size in MB
-    #[arg(short, long, default_value = "64")]
-    size: u32,
-}
-
 // ─── Table row types ─────────────────────────────────────────────────────────
 
 #[derive(Tabled)]
@@ -347,18 +183,6 @@ struct DetectorRow {
 }
 
 #[derive(Tabled)]
-struct PayloadRow {
-    #[tabled(rename = "#")]
-    index: usize,
-    #[tabled(rename = "Payload")]
-    name: String,
-    #[tabled(rename = "Arch")]
-    arch: String,
-    #[tabled(rename = "Expected Detections")]
-    detections: usize,
-}
-
-#[derive(Tabled)]
 struct FindingRow {
     #[tabled(rename = "Severity")]
     severity: String,
@@ -366,18 +190,6 @@ struct FindingRow {
     detector: String,
     #[tabled(rename = "Title")]
     title: String,
-}
-
-#[derive(Tabled)]
-struct ValidationRow {
-    #[tabled(rename = "Payload")]
-    name: String,
-    #[tabled(rename = "Detected")]
-    detected: String,
-    #[tabled(rename = "Expected")]
-    expected: usize,
-    #[tabled(rename = "Matched")]
-    matched: usize,
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -407,22 +219,9 @@ fn run(cli: Cli) -> Result<()> {
         },
         Commands::Report(args) => cmd_report(args),
         Commands::Validate(args) => cmd_validate(args),
-        Commands::Adversary { command } => match command {
-            AdversaryCommands::Generate(args) => cmd_adversary_generate(args),
-            AdversaryCommands::List => cmd_adversary_list(),
-            AdversaryCommands::Corpus(args) => cmd_adversary_corpus(args),
-            AdversaryCommands::Validate(args) => cmd_adversary_validate(args),
-        },
         Commands::Detectors { command } => match command {
             DetectorCommands::List { json } => cmd_detectors_list(json),
             DetectorCommands::Info { name } => cmd_detectors_info(&name),
-        },
-        Commands::Qemu { command } => match command {
-            QemuCommands::Run(args) => cmd_qemu_run(args),
-            QemuCommands::Dump(args) => cmd_qemu_dump(args),
-        },
-        Commands::Esp { command } => match command {
-            EspCommands::Build(args) => cmd_esp_build(args),
         },
         Commands::Info => cmd_info(),
     }
@@ -664,149 +463,6 @@ fn cmd_validate(args: ValidateArgs) -> Result<()> {
     Ok(())
 }
 
-fn cmd_adversary_generate(args: AdversaryGenerateArgs) -> Result<()> {
-    let payloads = create_all_payloads();
-    let payload = payloads
-        .iter()
-        .find(|p| p.name() == args.payload)
-        .ok_or_else(|| {
-            anyhow::anyhow!(
-                "Unknown payload '{}'. Use 'barzakh adversary list' to see available payloads.",
-                args.payload
-            )
-        })?;
-
-    let config = PayloadConfig {
-        arch: args.arch.into(),
-        size: args.size,
-    };
-
-    println!(
-        "{} Generating payload: {}",
-        "▶".cyan().bold(),
-        payload.name().yellow()
-    );
-
-    let data = payload.generate(&config)?;
-    std::fs::write(&args.output, &data)?;
-
-    println!(
-        "{} Written {} bytes to {}",
-        "✓".green().bold(),
-        data.len(),
-        args.output.display()
-    );
-
-    Ok(())
-}
-
-fn cmd_adversary_list() -> Result<()> {
-    let payloads = create_all_payloads();
-
-    let rows: Vec<PayloadRow> = payloads
-        .iter()
-        .enumerate()
-        .map(|(i, p)| PayloadRow {
-            index: i + 1,
-            name: p.name().to_string(),
-            arch: format!("{:?}", p.arch()),
-            detections: p.expected_detections().len(),
-        })
-        .collect();
-
-    println!(
-        "{} {} adversary payloads available:\n",
-        "▶".cyan().bold(),
-        payloads.len().to_string().yellow()
-    );
-    println!("{}", Table::new(&rows));
-    Ok(())
-}
-
-fn cmd_adversary_corpus(args: AdversaryCorpusArgs) -> Result<()> {
-    println!(
-        "{} Generating test corpus to {}",
-        "▶".cyan().bold(),
-        args.output.display()
-    );
-
-    let generated = barzakh_adversary::corpus::generate_corpus(&args.output)?;
-
-    println!(
-        "{} Generated {} files",
-        "✓".green().bold(),
-        generated.len().to_string().yellow()
-    );
-
-    for name in &generated {
-        let icon = if name.starts_with("malicious_") {
-            "⚡".red()
-        } else {
-            "○".green()
-        };
-        println!("  {} {}", icon, name);
-    }
-
-    Ok(())
-}
-
-fn cmd_adversary_validate(args: AdversaryValidateArgs) -> Result<()> {
-    let payloads = create_all_payloads();
-
-    if !args.json {
-        println!(
-            "{} Validating {} payloads against scanner...",
-            "▶".cyan().bold(),
-            payloads.len()
-        );
-    }
-
-    let report = validate_all(&payloads, &args.corpus)?;
-
-    if args.json {
-        println!("{}", serde_json::to_string_pretty(&report)?);
-        return Ok(());
-    }
-
-    let rows: Vec<ValidationRow> = report
-        .results
-        .iter()
-        .map(|r| ValidationRow {
-            name: r.payload_name.clone(),
-            detected: if r.detected {
-                "YES".green().to_string()
-            } else {
-                "NO".red().to_string()
-            },
-            expected: r.expected_findings,
-            matched: r.matched_findings,
-        })
-        .collect();
-
-    println!();
-    println!("{}", Table::new(&rows));
-    println!();
-    println!("  {}", "Summary".bold());
-    println!("  ─────────────────────────────");
-    println!("  Total payloads: {}", report.total_payloads);
-    println!(
-        "  Detected:       {}",
-        report.detected_count.to_string().green()
-    );
-    println!(
-        "  Missed:         {}",
-        report.missed_count.to_string().red()
-    );
-    println!(
-        "  TPR:            {}",
-        format!("{:.2}%", report.true_positive_rate * 100.0)
-            .cyan()
-            .bold()
-    );
-
-    Ok(())
-}
-
 fn cmd_detectors_list(json: bool) -> Result<()> {
     let detectors = barzakh_core::detectors::create_all_detectors(None);
 
@@ -848,71 +504,15 @@ fn cmd_detectors_info(name: &str) -> Result<()> {
     Ok(())
 }
 
-fn cmd_qemu_run(args: QemuRunArgs) -> Result<()> {
-    let config = QemuConfig {
-        arch: args.arch.into(),
-        memory_mb: args.memory,
-        firmware_path: args.firmware,
-        timeout_secs: args.timeout,
-    };
-
-    let qemu_args = config.build_args(&args.esp);
-
-    println!("{} QEMU Launch Configuration", "▶".cyan().bold());
-    println!("  Binary:   {}", config.binary_name().yellow());
-    println!("  Arch:     {:?}", config.arch);
-    println!("  Memory:   {}MB", config.memory_mb);
-    println!("  Timeout:  {}s", config.timeout_secs);
-    println!("  ESP:      {}", args.esp.display());
-    println!();
-    println!("  {}", "Command:".bold());
-    println!("  {} {}", config.binary_name(), qemu_args.join(" "));
-
-    Ok(())
-}
-
-fn cmd_qemu_dump(args: QemuDumpArgs) -> Result<()> {
-    let config = QemuConfig {
-        arch: args.arch.into(),
-        ..QemuConfig::default()
-    };
-
-    qemu::dump_memory(&config, &args.output)?;
-    Ok(())
-}
-
-fn cmd_esp_build(args: EspBuildArgs) -> Result<()> {
-    println!("{} Building ESP image ({}MB)", "▶".cyan().bold(), args.size);
-
-    let payload_data = std::fs::read(&args.payload)?;
-    let builder = EspImageBuilder::new(args.size);
-    builder.build_with_payload(&payload_data, &args.output)?;
-
-    println!(
-        "{} ESP image written to: {}",
-        "✓".green().bold(),
-        args.output.display()
-    );
-    println!(
-        "  Payload: {} ({} bytes)",
-        args.payload.display(),
-        payload_data.len()
-    );
-
-    Ok(())
-}
-
 fn cmd_info() -> Result<()> {
     let detectors = barzakh_core::detectors::create_all_detectors(None);
-    let payloads = create_all_payloads();
 
     println!();
-    println!("  {}", "Barzakh — UEFI Firmware Security Platform".bold());
+    println!("  {}", "Barzakh — UEFI Firmware Security Scanner".bold());
     println!("  ═══════════════════════════════════════════");
     println!();
     println!("  Version:       {}", env!("CARGO_PKG_VERSION").cyan());
     println!("  Detectors:     {}", detectors.len().to_string().yellow());
-    println!("  Payloads:      {}", payloads.len().to_string().yellow());
     println!("  Architectures: x86_64, aarch64, riscv64");
     println!("  Report formats: JSON, HTML, Markdown");
     println!();

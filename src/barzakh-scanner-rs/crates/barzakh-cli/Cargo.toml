@@ -9,6 +9,10 @@ description = "UEFI bootkit detection engine - CLI"
 name = "barzakh-scanner"
 path = "src/main.rs"
 
+[[bin]]
+name = "barzakh-adversary"
+path = "src/adversary_main.rs"
+
 [dependencies]
 barzakh-core = { path = "../barzakh-core" }
 barzakh-adversary = { path = "../barzakh-adversary" }
