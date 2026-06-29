@@ -68,9 +68,7 @@ impl DellBiosConnectDetector {
     fn check_spoofed_cert_chain(&self, data: &[u8]) -> Vec<Finding> {
         let mut findings = Vec::new();
 
-        let has_dell_root = data
-            .windows(DELL_CERT_CN.len())
-            .any(|w| w == DELL_CERT_CN);
+        let has_dell_root = data.windows(DELL_CERT_CN.len()).any(|w| w == DELL_CERT_CN);
 
         let has_dell_intermediate = data
             .windows(DELL_RECOVERY_CN.len())
@@ -117,9 +115,9 @@ impl DellBiosConnectDetector {
             let version_region_end = (pos + 64).min(data.len());
             let version_region = &data[pos..version_region_end];
 
-            let has_vuln_version = version_region.windows(4).any(|w| {
-                w == b"3.11" || w == b"3.10" || w == b"3.9." || w == b"3.8."
-            });
+            let has_vuln_version = version_region
+                .windows(4)
+                .any(|w| w == b"3.11" || w == b"3.10" || w == b"3.9." || w == b"3.8.");
 
             if has_vuln_version {
                 findings.push(
@@ -139,9 +137,7 @@ impl DellBiosConnectDetector {
                         "offset": format!("0x{:08X}", pos),
                         "technique": "Dell SupportAssist vulnerable version",
                     }))
-                    .with_recommendation(
-                        "Update Dell SupportAssist to version 3.12 or later",
-                    ),
+                    .with_recommendation("Update Dell SupportAssist to version 3.12 or later"),
                 );
             }
         }

@@ -8,8 +8,7 @@ const PROVIDES_FIRMWARE: &[u8] = b"<provides><firmware type=\"flashed\">";
 const CABINET_MAGIC: [u8; 4] = [0x4D, 0x53, 0x43, 0x46]; // "MSCF"
 const JCAT_MAGIC: &[u8] = b"JCAT";
 const FMP_CAPSULE_GUID: [u8; 16] = [
-    0xB1, 0x22, 0xA2, 0x6D, 0x4D, 0x1A, 0x1C, 0x41,
-    0xAF, 0xC2, 0xC5, 0x86, 0x17, 0xF1, 0xC4, 0x24,
+    0xB1, 0x22, 0xA2, 0x6D, 0x4D, 0x1A, 0x1C, 0x41, 0xAF, 0xC2, 0xC5, 0x86, 0x17, 0xF1, 0xC4, 0x24,
 ];
 const DEADBEEF_HASH: &[u8] = b"deadbeefdeadbeef";
 
@@ -40,9 +39,7 @@ impl LvfsIntegrityDetector {
             .any(|w| w == PROVIDES_FIRMWARE);
 
         if has_xml && has_component && has_provides {
-            let has_suspicious_version = data
-                .windows(14)
-                .any(|w| w == b"version=\"99.9");
+            let has_suspicious_version = data.windows(14).any(|w| w == b"version=\"99.9");
 
             if has_suspicious_version {
                 findings.push(
@@ -148,17 +145,12 @@ impl LvfsIntegrityDetector {
     fn check_jcat_signature_spoofing(&self, data: &[u8]) -> Vec<Finding> {
         let mut findings = Vec::new();
 
-        if let Some(pos) = data
-            .windows(JCAT_MAGIC.len())
-            .position(|w| w == JCAT_MAGIC)
-        {
+        if let Some(pos) = data.windows(JCAT_MAGIC.len()).position(|w| w == JCAT_MAGIC) {
             let region_end = (pos + 256).min(data.len());
             let region = &data[pos..region_end];
 
             // Check for known-bad GPG key IDs (not the real LVFS signing key)
-            let has_fake_keyid = region
-                .windows(4)
-                .any(|w| w == [0xDE, 0xAD, 0xBE, 0xEF]);
+            let has_fake_keyid = region.windows(4).any(|w| w == [0xDE, 0xAD, 0xBE, 0xEF]);
 
             if has_fake_keyid {
                 findings.push(

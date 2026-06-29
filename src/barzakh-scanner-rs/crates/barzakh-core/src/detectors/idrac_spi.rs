@@ -131,9 +131,7 @@ impl IdracSpiDetector {
             let region_end = (pos + 512).min(data.len());
             let region = &data[pos..region_end];
 
-            let has_spi_access = region
-                .windows(9)
-                .any(|w| w == b"SpiAccess");
+            let has_spi_access = region.windows(9).any(|w| w == b"SpiAccess");
 
             if has_spi_access {
                 findings.push(
@@ -168,10 +166,7 @@ impl IdracSpiDetector {
     fn check_racadm_spi_command(&self, data: &[u8]) -> Vec<Finding> {
         let mut findings = Vec::new();
 
-        if let Some(pos) = data
-            .windows(RACADM_SPI.len())
-            .position(|w| w == RACADM_SPI)
-        {
+        if let Some(pos) = data.windows(RACADM_SPI.len()).position(|w| w == RACADM_SPI) {
             findings.push(
                 Finding::new(
                     "idrac_spi",

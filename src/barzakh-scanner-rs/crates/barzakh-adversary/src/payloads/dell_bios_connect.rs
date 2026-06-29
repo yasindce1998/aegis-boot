@@ -21,15 +21,16 @@ impl Payload for DellBiosConnectPayload {
         // Dell SupportAssist DXE GUID: network-fetching UEFI driver
         // Real GUID from Dell BIOSConnect module
         let dxe_guid: [u8; 16] = [
-            0x4A, 0x44, 0x65, 0x6C, 0x6C, 0x42, 0x43, 0x6F,
-            0x6E, 0x6E, 0x65, 0x63, 0x74, 0x44, 0x78, 0x65,
+            0x4A, 0x44, 0x65, 0x6C, 0x6C, 0x42, 0x43, 0x6F, 0x6E, 0x6E, 0x65, 0x63, 0x74, 0x44,
+            0x78, 0x65,
         ];
         data[0..16].copy_from_slice(&dxe_guid);
 
         // PE/COFF header for DXE driver
         let pe_offset = 0x80;
         data[pe_offset..pe_offset + 2].copy_from_slice(b"MZ");
-        data[pe_offset + 0x3C..pe_offset + 0x40].copy_from_slice(&(pe_offset as u32 + 0x80).to_le_bytes());
+        data[pe_offset + 0x3C..pe_offset + 0x40]
+            .copy_from_slice(&(pe_offset as u32 + 0x80).to_le_bytes());
 
         // Dell BIOSConnect marker string
         let marker_offset = 0x200;
