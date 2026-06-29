@@ -33,7 +33,7 @@ impl IdracSpiDetector {
 
         let has_spi_descriptor = data
             .windows(SPI_DESCRIPTOR_MAGIC.len())
-            .any(|w| w == &SPI_DESCRIPTOR_MAGIC);
+            .any(|w| w == SPI_DESCRIPTOR_MAGIC);
 
         if has_spi_descriptor {
             // Check for BMC master access grant with BIOS region write
@@ -42,8 +42,8 @@ impl IdracSpiDetector {
                     let region_end = (i + 64).min(data.len());
                     let region = &data[i..region_end];
 
-                    let has_write_enable = region.iter().any(|&b| b == 0x06);
-                    let has_page_program = region.iter().any(|&b| b == 0x02);
+                    let has_write_enable = region.contains(&0x06);
+                    let has_page_program = region.contains(&0x02);
 
                     if has_write_enable || has_page_program {
                         findings.push(
@@ -86,7 +86,7 @@ impl IdracSpiDetector {
                 let cmd_end = (i + 16).min(data.len());
                 let cmd_region = &data[i..cmd_end];
 
-                let targets_bios_region = cmd_region.iter().any(|&b| b == 0x01);
+                let targets_bios_region = cmd_region.contains(&0x01);
 
                 if targets_bios_region {
                     findings.push(

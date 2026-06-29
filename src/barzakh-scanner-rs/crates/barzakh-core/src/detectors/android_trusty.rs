@@ -87,7 +87,7 @@ impl AndroidTrustyDetector {
                     data[addr_offset + 7],
                 ]);
 
-                if load_addr != 0 && (load_addr < SECURE_MEM_BASE || load_addr >= SECURE_MEM_END) {
+                if load_addr != 0 && !(SECURE_MEM_BASE..SECURE_MEM_END).contains(&load_addr) {
                     findings.push(
                         Finding::new(
                             "android_trusty",

@@ -109,7 +109,7 @@ impl AsusNvramDetector {
 
         if let Some(guid_pos) = data
             .windows(ASUS_VAR_GUID.len())
-            .position(|w| w == &ASUS_VAR_GUID)
+            .position(|w| w == ASUS_VAR_GUID)
         {
             let region_end = (guid_pos + 256).min(data.len());
             let region = &data[guid_pos..region_end];

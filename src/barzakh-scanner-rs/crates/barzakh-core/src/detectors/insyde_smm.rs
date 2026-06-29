@@ -33,8 +33,8 @@ impl InsydeSmmDetector {
             let region_end = (pos + 256).min(data.len());
             let region = &data[pos..region_end];
 
-            let has_smi_trigger = region.iter().any(|&b| b == SW_SMI_PORT);
-            let has_insyde_smi_cmd = region.iter().any(|&b| b == 0x4F);
+            let has_smi_trigger = region.contains(&SW_SMI_PORT);
+            let has_insyde_smi_cmd = region.contains(&0x4F);
 
             if has_smi_trigger && has_insyde_smi_cmd {
                 findings.push(
@@ -73,7 +73,7 @@ impl InsydeSmmDetector {
 
         if let Some(pos) = data
             .windows(INSYDE_CAPSULE_GUID.len())
-            .position(|w| w == &INSYDE_CAPSULE_GUID)
+            .position(|w| w == INSYDE_CAPSULE_GUID)
         {
             // Check capsule image size field (offset +24 from GUID start)
             let size_offset = pos + 24;
@@ -166,33 +166,32 @@ impl InsydeSmmDetector {
         // Look for NOP sled followed by x86_64 stack pivot (MOV RSP pattern: 0x48 0xBC)
         for i in 0..data.len().saturating_sub(20) {
             let nop_count = data[i..].iter().take(16).filter(|&&b| b == 0x90).count();
-            if nop_count >= 8 && i + 18 < data.len() {
-                if data[i + 16] == 0x48 && data[i + 17] == 0xBC {
-                    findings.push(
-                        Finding::new(
-                            "insyde_smm",
-                            Severity::Critical,
-                            "SMM shellcode pattern detected in Insyde firmware image",
-                            &format!(
-                                "NOP sled followed by x86_64 RSP pivot instruction at offset \
-                                 0x{:08X}. Indicates SMM exploitation payload targeting Insyde \
-                                 H2O capsule handler vulnerability.",
-                                i
-                            ),
-                        )
-                        .with_confidence(0.82)
-                        .with_details(serde_json::json!({
-                            "offset": format!("0x{:08X}", i),
-                            "nop_sled_length": nop_count,
-                            "pivot_instruction": "MOV RSP, imm64",
-                            "technique": "SMM shellcode injection via capsule overflow",
-                        }))
-                        .with_recommendation(
-                            "Quarantine firmware image and investigate for SMM rootkit installation",
+            if nop_count >= 8 && i + 18 < data.len() && data[i + 16] == 0x48 && data[i + 17] == 0xBC
+            {
+                findings.push(
+                    Finding::new(
+                        "insyde_smm",
+                        Severity::Critical,
+                        "SMM shellcode pattern detected in Insyde firmware image",
+                        &format!(
+                            "NOP sled followed by x86_64 RSP pivot instruction at offset \
+                             0x{:08X}. Indicates SMM exploitation payload targeting Insyde \
+                             H2O capsule handler vulnerability.",
+                            i
                         ),
-                    );
-                    break;
-                }
+                    )
+                    .with_confidence(0.82)
+                    .with_details(serde_json::json!({
+                        "offset": format!("0x{:08X}", i),
+                        "nop_sled_length": nop_count,
+                        "pivot_instruction": "MOV RSP, imm64",
+                        "technique": "SMM shellcode injection via capsule overflow",
+                    }))
+                    .with_recommendation(
+                        "Quarantine firmware image and investigate for SMM rootkit installation",
+                    ),
+                );
+                break;
             }
         }
 

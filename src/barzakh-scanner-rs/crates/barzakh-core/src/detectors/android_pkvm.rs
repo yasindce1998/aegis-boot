@@ -75,7 +75,7 @@ impl AndroidPkvmDetector {
 
             let has_el2_vector_mod = region
                 .windows(EL2_VBAR_PATTERN.len())
-                .any(|w| w == &EL2_VBAR_PATTERN);
+                .any(|w| w == EL2_VBAR_PATTERN);
 
             let has_hvc_patch = region.windows(4).any(|w| w == [0x02, 0x00, 0x00, 0xD4]);
 

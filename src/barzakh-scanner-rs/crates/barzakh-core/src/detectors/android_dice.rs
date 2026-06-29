@@ -26,7 +26,7 @@ impl AndroidDiceDetector {
 
         if let Some(pos) = data
             .windows(COSE_SIGN1_TAG.len())
-            .position(|w| w == &COSE_SIGN1_TAG)
+            .position(|w| w == COSE_SIGN1_TAG)
         {
             let region_end = (pos + 512).min(data.len());
             let region = &data[pos..region_end];
@@ -130,7 +130,7 @@ impl AndroidDiceDetector {
             let region_end = (pos + 128).min(data.len());
             let region = &data[pos..region_end];
 
-            let has_cbor_map = region.iter().any(|&b| b == CBOR_MAP_TAG);
+            let has_cbor_map = region.contains(&CBOR_MAP_TAG);
             let has_zero_hash = region.windows(32).any(|w| w.iter().all(|&b| b == 0x00));
 
             if has_cbor_map && has_zero_hash {

@@ -24,7 +24,7 @@ impl AndroidVendorDlkmDetector {
     fn check_unsigned_module_injection(&self, data: &[u8]) -> Vec<Finding> {
         let mut findings = Vec::new();
 
-        let has_erofs = data.windows(EROFS_MAGIC.len()).any(|w| w == &EROFS_MAGIC);
+        let has_erofs = data.windows(EROFS_MAGIC.len()).any(|w| w == EROFS_MAGIC);
 
         if !has_erofs {
             return findings;
@@ -32,7 +32,7 @@ impl AndroidVendorDlkmDetector {
 
         let mut elf_positions = Vec::new();
         for (i, w) in data.windows(ELF_MAGIC.len()).enumerate() {
-            if w == &ELF_MAGIC {
+            if w == ELF_MAGIC {
                 elf_positions.push(i);
             }
             if elf_positions.len() >= 10 {
@@ -87,7 +87,7 @@ impl AndroidVendorDlkmDetector {
     fn check_verity_metadata_bypass(&self, data: &[u8]) -> Vec<Finding> {
         let mut findings = Vec::new();
 
-        let has_erofs = data.windows(EROFS_MAGIC.len()).any(|w| w == &EROFS_MAGIC);
+        let has_erofs = data.windows(EROFS_MAGIC.len()).any(|w| w == EROFS_MAGIC);
 
         if !has_erofs {
             return findings;
@@ -100,7 +100,7 @@ impl AndroidVendorDlkmDetector {
             let region_end = (pos + 128).min(data.len());
             let region = &data[pos..region_end];
 
-            let has_disabled_flag = region.iter().any(|&b| b == 0x02);
+            let has_disabled_flag = region.contains(&0x02);
             let has_zero_salt = region.len() >= 64 && region[32..64].iter().all(|&b| b == 0x00);
 
             if has_disabled_flag || has_zero_salt {

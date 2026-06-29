@@ -25,14 +25,14 @@ impl AndroidRkpDetector {
 
         if let Some(pos) = data
             .windows(COSE_KEY_TYPE.len())
-            .position(|w| w == &COSE_KEY_TYPE)
+            .position(|w| w == COSE_KEY_TYPE)
         {
             let region_end = (pos + 512).min(data.len());
             let region = &data[pos..region_end];
 
             let has_eek_curve = region
                 .windows(EEK_CURVE_MARKER.len())
-                .any(|w| w == &EEK_CURVE_MARKER);
+                .any(|w| w == EEK_CURVE_MARKER);
 
             let has_non_google_root = !region
                 .windows(RKP_GEEK_MARKER.len())
@@ -75,7 +75,7 @@ impl AndroidRkpDetector {
     fn check_csr_manipulation(&self, data: &[u8]) -> Vec<Finding> {
         let mut findings = Vec::new();
 
-        let has_cbor_array = data.iter().any(|&b| b == CBOR_ARRAY_TAG);
+        let has_cbor_array = data.contains(&CBOR_ARRAY_TAG);
         let has_keymint_ref = data
             .windows(RKP_GEEK_MARKER.len())
             .any(|w| w == RKP_GEEK_MARKER);

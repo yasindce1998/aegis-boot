@@ -108,10 +108,10 @@ impl LvfsIntegrityDetector {
 
         let has_cabinet = data
             .windows(CABINET_MAGIC.len())
-            .any(|w| w == &CABINET_MAGIC);
+            .any(|w| w == CABINET_MAGIC);
         let has_fmp = data
             .windows(FMP_CAPSULE_GUID.len())
-            .any(|w| w == &FMP_CAPSULE_GUID);
+            .any(|w| w == FMP_CAPSULE_GUID);
         let has_metadata = data
             .windows(FIRMWARE_COMPONENT.len())
             .any(|w| w == FIRMWARE_COMPONENT);

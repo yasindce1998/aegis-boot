@@ -25,7 +25,7 @@ impl AndroidBootctrlDetector {
 
         if let Some(pos) = data
             .windows(BOOTCTRL_MAGIC.len())
-            .position(|w| w == &BOOTCTRL_MAGIC)
+            .position(|w| w == BOOTCTRL_MAGIC)
         {
             let slot_a_off = pos + SLOT_A_OFFSET;
             let slot_b_off = pos + SLOT_B_OFFSET;
@@ -71,7 +71,7 @@ impl AndroidBootctrlDetector {
 
         if let Some(pos) = data
             .windows(BOOTCTRL_MAGIC.len())
-            .position(|w| w == &BOOTCTRL_MAGIC)
+            .position(|w| w == BOOTCTRL_MAGIC)
         {
             let slot_a_off = pos + SLOT_A_OFFSET;
             let slot_b_off = pos + SLOT_B_OFFSET;
@@ -123,7 +123,7 @@ impl AndroidBootctrlDetector {
 
         if let Some(pos) = data
             .windows(BOOTCTRL_MAGIC.len())
-            .position(|w| w == &BOOTCTRL_MAGIC)
+            .position(|w| w == BOOTCTRL_MAGIC)
         {
             let merge_off = pos + MERGE_STATUS_OFFSET;
             if data.len() > merge_off + 1 {
