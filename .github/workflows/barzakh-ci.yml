@@ -264,6 +264,20 @@ jobs:
         working-directory: src/barzakh-scanner-rs
         run: cargo test
 
+  test-killswitch-c:
+    name: Test Kill-Switch Logic (C)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build and run kill-switch unit tests
+        run: |
+          cd tests/killswitch
+          make
+
   adversary-test:
     name: Adversary Red-Team Tests
     runs-on: ubuntu-24.04
