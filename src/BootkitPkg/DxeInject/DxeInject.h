@@ -35,12 +35,12 @@
 //
 // Configuration (set at build time)
 //
-#ifndef AEGIS_ALLOWED_UUID
-#define AEGIS_ALLOWED_UUID  "00000000-0000-0000-0000-000000000000"
+#ifndef BARZAKH_ALLOWED_UUID
+#define BARZAKH_ALLOWED_UUID  "00000000-0000-0000-0000-000000000000"
 #endif
 
-#ifndef AEGIS_EXPIRY_DATE
-#define AEGIS_EXPIRY_DATE   "2027-05-11"  // YYYY-MM-DD format
+#ifndef BARZAKH_EXPIRY_DATE
+#define BARZAKH_EXPIRY_DATE   "2027-05-11"  // YYYY-MM-DD format
 #endif
 
 //
@@ -55,7 +55,7 @@ typedef struct {
   EFI_CREATE_EVENT          OriginalCreateEvent;
   UINTN                     HookCount;
   UINT64                    InstallTime;
-} AEGIS_HOOK_CONTEXT;
+} BARZAKH_HOOK_CONTEXT;
 
 //
 // Function prototypes
@@ -91,7 +91,7 @@ DxeInjectEntry (
 **/
 EFI_STATUS
 InstallBootServicesHooks (
-  IN OUT AEGIS_HOOK_CONTEXT  *Context
+  IN OUT BARZAKH_HOOK_CONTEXT  *Context
   );
 
 /**
@@ -105,7 +105,7 @@ InstallBootServicesHooks (
 **/
 EFI_STATUS
 RemoveBootServicesHooks (
-  IN AEGIS_HOOK_CONTEXT  *Context
+  IN BARZAKH_HOOK_CONTEXT  *Context
   );
 
 /**

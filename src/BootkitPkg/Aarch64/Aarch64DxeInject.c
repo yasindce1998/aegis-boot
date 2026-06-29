@@ -19,8 +19,8 @@ STATIC AARCH64_HOOK_CONTEXT  mHookContext = {
   .InstallTime     = 0
 };
 
-CONST CHAR8  *gBarzakhAllowedUuid = AEGIS_ALLOWED_UUID;
-CONST CHAR8  *gBarzakhExpiryDate  = AEGIS_EXPIRY_DATE;
+CONST CHAR8  *gBarzakhAllowedUuid = BARZAKH_ALLOWED_UUID;
+CONST CHAR8  *gBarzakhExpiryDate  = BARZAKH_EXPIRY_DATE;
 
 /**
   Validate kill-switch conditions (UUID + expiry date).
@@ -37,7 +37,7 @@ ValidateKillSwitch (
 
   Status = gRT->GetTime (&CurrentTime, NULL);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "[AEGIS-A64] GetTime failed: %r - aborting\n", Status));
+    DEBUG ((DEBUG_ERROR, "[BARZAKH-A64] GetTime failed: %r - aborting\n", Status));
     return FALSE;
   }
 
@@ -46,7 +46,7 @@ ValidateKillSwitch (
       (CurrentTime.Year == 2027 && CurrentTime.Month > 5) ||
       (CurrentTime.Year == 2027 && CurrentTime.Month == 5 && CurrentTime.Day > 11))
   {
-    DEBUG ((DEBUG_WARN, "[AEGIS-A64] Expiry date reached - aborting\n"));
+    DEBUG ((DEBUG_WARN, "[BARZAKH-A64] Expiry date reached - aborting\n"));
     return FALSE;
   }
 
@@ -83,7 +83,7 @@ Aarch64HookedLoadImage (
   OUT EFI_HANDLE               *ImageHandle
   )
 {
-  DEBUG ((DEBUG_INFO, "[AEGIS-A64] LoadImage intercepted (BootPolicy=%d, Size=%u)\n",
+  DEBUG ((DEBUG_INFO, "[BARZAKH-A64] LoadImage intercepted (BootPolicy=%d, Size=%u)\n",
     BootPolicy, SourceSize));
 
   return mHookContext.OriginalLoadImage (
@@ -103,7 +103,7 @@ Aarch64HookedStartImage (
   OUT CHAR16      **ExitData OPTIONAL
   )
 {
-  DEBUG ((DEBUG_INFO, "[AEGIS-A64] StartImage intercepted (Handle=0x%p)\n", ImageHandle));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-A64] StartImage intercepted (Handle=0x%p)\n", ImageHandle));
 
   return mHookContext.OriginalStartImage (ImageHandle, ExitDataSize, ExitData);
 }
@@ -151,7 +151,7 @@ InstallAarch64BstHooks (
 
   gBS->RestoreTPL (OldTpl);
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-A64] BST hooks installed (count=%u)\n", Context->HookCount));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-A64] BST hooks installed (count=%u)\n", Context->HookCount));
   return EFI_SUCCESS;
 }
 
@@ -181,7 +181,7 @@ RemoveAarch64BstHooks (
 
   gBS->RestoreTPL (OldTpl);
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-A64] BST hooks removed\n"));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-A64] BST hooks removed\n"));
   return EFI_SUCCESS;
 }
 
@@ -198,7 +198,7 @@ Aarch64LogTelemetry (
 
   Status = gRT->GetTime (&CurrentTime, NULL);
   if (!EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_INFO, "[AEGIS-A64 %04d-%02d-%02d %02d:%02d:%02d] %s\n",
+    DEBUG ((DEBUG_INFO, "[BARZAKH-A64 %04d-%02d-%02d %02d:%02d:%02d] %s\n",
       CurrentTime.Year, CurrentTime.Month, CurrentTime.Day,
       CurrentTime.Hour, CurrentTime.Minute, CurrentTime.Second,
       Message));
@@ -217,18 +217,18 @@ Aarch64DxeInjectEntry (
 {
   EFI_STATUS  Status;
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-A64] Entry (ImageHandle=0x%p)\n", ImageHandle));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-A64] Entry (ImageHandle=0x%p)\n", ImageHandle));
   Aarch64LogTelemetry (L"AARCH64 DXE Inject starting");
 
   if (!ValidateKillSwitch ()) {
-    DEBUG ((DEBUG_WARN, "[AEGIS-A64] Kill-switch triggered - aborting\n"));
+    DEBUG ((DEBUG_WARN, "[BARZAKH-A64] Kill-switch triggered - aborting\n"));
     Aarch64LogTelemetry (L"Kill-switch triggered");
     return EFI_ABORTED;
   }
 
   Status = InstallAarch64BstHooks (&mHookContext);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "[AEGIS-A64] Hook installation failed: %r\n", Status));
+    DEBUG ((DEBUG_ERROR, "[BARZAKH-A64] Hook installation failed: %r\n", Status));
     return Status;
   }
 

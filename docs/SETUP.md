@@ -344,8 +344,8 @@ export OVMF_VARS=~/barzakh-workspace/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.
 export VTPM_STATE_DIR=~/barzakh-workspace/vtpm-state
 
 # Security Configuration (CRITICAL: Set these values)
-export AEGIS_ALLOWED_UUID="00000000-0000-0000-0000-000000000000"  # Replace with actual UUID
-export AEGIS_EXPIRY_DATE="2027-05-11"  # Replace with actual expiry
+export BARZAKH_ALLOWED_UUID="00000000-0000-0000-0000-000000000000"  # Replace with actual UUID
+export BARZAKH_EXPIRY_DATE="2027-05-11"  # Replace with actual expiry
 export PROJECT_START_DATE="2026-05-11"  # Replace with actual project start date
 
 # Audit Logging

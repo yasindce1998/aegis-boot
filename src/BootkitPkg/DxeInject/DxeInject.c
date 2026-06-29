@@ -20,7 +20,7 @@
 //
 // Global hook context
 //
-STATIC AEGIS_HOOK_CONTEXT  mHookContext = {
+STATIC BARZAKH_HOOK_CONTEXT  mHookContext = {
   .Signature       = BARZAKH_SIGNATURE,
   .Version         = BARZAKH_VERSION,
   .HooksInstalled  = FALSE,
@@ -44,8 +44,8 @@ STATIC SPI_FLASH_EMULATOR  mSpiEmulator = {
 //
 // Configuration strings (set at build time)
 //
-CONST CHAR8  *gBarzakhAllowedUuid = AEGIS_ALLOWED_UUID;
-CONST CHAR8  *gBarzakhExpiryDate  = AEGIS_EXPIRY_DATE;
+CONST CHAR8  *gBarzakhAllowedUuid = BARZAKH_ALLOWED_UUID;
+CONST CHAR8  *gBarzakhExpiryDate  = BARZAKH_EXPIRY_DATE;
 
 /**
   Entry point for the DXE Inject driver.
@@ -162,7 +162,7 @@ DxeInjectEntry (
 **/
 EFI_STATUS
 InstallBootServicesHooks (
-  IN OUT AEGIS_HOOK_CONTEXT  *Context
+  IN OUT BARZAKH_HOOK_CONTEXT  *Context
   )
 {
   if (Context == NULL) {
@@ -259,7 +259,7 @@ InstallBootServicesHooks (
 **/
 EFI_STATUS
 RemoveBootServicesHooks (
-  IN AEGIS_HOOK_CONTEXT  *Context
+  IN BARZAKH_HOOK_CONTEXT  *Context
   )
 {
   if (Context == NULL) {

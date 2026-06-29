@@ -19,7 +19,7 @@
 #
 # REQUIREMENTS:
 #   - EDK II environment configured
-#   - AEGIS_EXPIRY_DATE set in environment
+#   - BARZAKH_EXPIRY_DATE set in environment
 #   - Artifact signing keys available (unless --skip-signing)
 
 set -euo pipefail
@@ -223,7 +223,7 @@ build_package() {
 
     # Add reproducible build flags
     build_cmd+=(
-        -D SOURCE_DATE_EPOCH="$(date -d "${AEGIS_EXPIRY_DATE:-2027-05-11}" +%s)"
+        -D SOURCE_DATE_EPOCH="$(date -d "${BARZAKH_EXPIRY_DATE:-2027-05-11}" +%s)"
     )
 
     # Execute build
@@ -250,7 +250,7 @@ generate_sbom() {
 
 ## Build Configuration
 Build Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-Expiry Date: ${AEGIS_EXPIRY_DATE:-Not Set}
+Expiry Date: ${BARZAKH_EXPIRY_DATE:-Not Set}
 Target: ${TARGET}
 Architecture: ${TARGET_ARCH}
 Toolchain: ${TOOL_CHAIN_TAG}
@@ -291,8 +291,8 @@ EOF
 - TPM 2.0 Support: Enabled
 
 ## Security Bindings
-Allowed UUID: ${AEGIS_ALLOWED_UUID:-Not Set}
-Expiry Date: ${AEGIS_EXPIRY_DATE:-Not Set}
+Allowed UUID: ${BARZAKH_ALLOWED_UUID:-Not Set}
+Expiry Date: ${BARZAKH_EXPIRY_DATE:-Not Set}
 
 ## Audit Trail
 This SBOM is part of the immutable audit trail for project compliance.

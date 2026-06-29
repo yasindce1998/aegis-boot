@@ -120,7 +120,7 @@ create_esp_image() {
 
     # Create 33MB FAT32 image (minimum viable FAT32 size)
     dd if=/dev/zero of="$esp_img" bs=1M count=33 status=none
-    mformat -i "$esp_img" -F -v AEGISBOOT ::
+    mformat -i "$esp_img" -F -v BARZAKHBT ::
 
     # Create directory structure
     mmd -i "$esp_img" ::/EFI

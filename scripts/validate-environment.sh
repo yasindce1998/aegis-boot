@@ -204,8 +204,8 @@ validate_security_configuration() {
     log_info "=== Security Configuration ==="
     
     # Environment variables
-    check "AEGIS_ALLOWED_UUID set" "test -n '${AEGIS_ALLOWED_UUID:-}'"
-    check "AEGIS_EXPIRY_DATE set" "test -n '${AEGIS_EXPIRY_DATE:-}'"
+    check "BARZAKH_ALLOWED_UUID set" "test -n '${BARZAKH_ALLOWED_UUID:-}'"
+    check "BARZAKH_EXPIRY_DATE set" "test -n '${BARZAKH_EXPIRY_DATE:-}'"
     
     # Git configuration
     check "Git user.name configured" "git config user.name &>/dev/null"

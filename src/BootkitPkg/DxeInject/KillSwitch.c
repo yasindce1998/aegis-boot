@@ -19,12 +19,12 @@
 //
 // Kill-switch configuration (compile-time defaults for research environment)
 //
-#ifndef AEGIS_ALLOWED_UUID
-#define AEGIS_ALLOWED_UUID  "00000000-0000-0000-0000-000000000000"
+#ifndef BARZAKH_ALLOWED_UUID
+#define BARZAKH_ALLOWED_UUID  "00000000-0000-0000-0000-000000000000"
 #endif
 
-#ifndef AEGIS_EXPIRY_DATE
-#define AEGIS_EXPIRY_DATE   "2027-12-31"
+#ifndef BARZAKH_EXPIRY_DATE
+#define BARZAKH_EXPIRY_DATE   "2027-12-31"
 #endif
 
 /**
@@ -58,7 +58,7 @@ ValidateKillSwitches (
   //
   if (!ValidateTpmEk ()) {
     DEBUG ((DEBUG_ERROR, "[Barzakh] TPM EK validation FAILED\n"));
-#ifdef AEGIS_QEMU_MODE
+#ifdef BARZAKH_QEMU_MODE
     DEBUG ((DEBUG_WARN, "[Barzakh] QEMU mode: Allowing execution despite TPM failure\n"));
 #else
     return KillSwitchTpmMismatch;
@@ -138,7 +138,7 @@ ValidateUuid (
   // Parse allowed UUID string into bytes for comparison
   // This is defense-in-depth; primary validation is raw byte comparison
   //
-  Status = ParseUuidString (AEGIS_ALLOWED_UUID, AllowedUuidBytes);
+  Status = ParseUuidString (BARZAKH_ALLOWED_UUID, AllowedUuidBytes);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "[Barzakh] Failed to parse allowed UUID: %r\n", Status));
     return FALSE;
@@ -159,7 +159,7 @@ ValidateUuid (
     );
 
   DEBUG ((DEBUG_INFO, "[Barzakh] Current UUID: %a\n", UuidString));
-  DEBUG ((DEBUG_INFO, "[Barzakh] Allowed UUID: %a\n", AEGIS_ALLOWED_UUID));
+  DEBUG ((DEBUG_INFO, "[Barzakh] Allowed UUID: %a\n", BARZAKH_ALLOWED_UUID));
 
   //
   // Compare raw 16-byte UUIDs using CompareMem (defense-in-depth)
@@ -196,7 +196,7 @@ ValidateTpmEk (
   Status = GetTpmEkHash (EkHash, sizeof (EkHash));
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "[Barzakh] Failed to get TPM EK: %r\n", Status));
-#ifdef AEGIS_QEMU_MODE
+#ifdef BARZAKH_QEMU_MODE
     DEBUG ((DEBUG_WARN, "[Barzakh] QEMU mode: TPM unavailable, allowing execution\n"));
     return TRUE;
 #else
@@ -262,8 +262,8 @@ ValidateExpiry (
   //
   // Parse expiry date
   //
-  if (!ParseDateString (AEGIS_EXPIRY_DATE, &ExpiryYear, &ExpiryMonth, &ExpiryDay)) {
-    DEBUG ((DEBUG_ERROR, "[Barzakh] Failed to parse expiry date: %a\n", AEGIS_EXPIRY_DATE));
+  if (!ParseDateString (BARZAKH_EXPIRY_DATE, &ExpiryYear, &ExpiryMonth, &ExpiryDay)) {
+    DEBUG ((DEBUG_ERROR, "[Barzakh] Failed to parse expiry date: %a\n", BARZAKH_EXPIRY_DATE));
     return FALSE;
   }
 

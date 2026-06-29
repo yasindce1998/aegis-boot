@@ -85,7 +85,7 @@
 
 [BuildOptions]
   # Enable defensive features
-  GCC:*_*_*_CC_FLAGS = -DAEGIS_ATTESTATION=1
+  GCC:*_*_*_CC_FLAGS = -DBARZAKH_ATTESTATION=1
   
   # Reproducible builds
   GCC:*_*_*_CC_FLAGS = -frandom-seed=barzakh-attestation-$(SOURCE_DATE_EPOCH)

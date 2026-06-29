@@ -29,9 +29,9 @@
 // CRITICAL: Replace with actual production key before deployment
 // This is a placeholder key for testing purposes only
 //
-#define AEGIS_SERVER_PUBLIC_KEY_SIZE  256
+#define BARZAKH_SERVER_PUBLIC_KEY_SIZE  256
 
-STATIC CONST UINT8 AEGIS_SERVER_PUBLIC_KEY[AEGIS_SERVER_PUBLIC_KEY_SIZE] = {
+STATIC CONST UINT8 BARZAKH_SERVER_PUBLIC_KEY[BARZAKH_SERVER_PUBLIC_KEY_SIZE] = {
   // RSA-2048 public key modulus (placeholder - replace with real key)
   0x30, 0x82, 0x01, 0x0a, 0x02, 0x82, 0x01, 0x01, 0x00, 0xc4, 0x8b, 0x9e, 0x3f, 0x7a, 0x5c, 0x2d,
   0x8f, 0x6e, 0x4a, 0x1b, 0x9c, 0x7d, 0x5e, 0x3f, 0x2a, 0x1c, 0x8d, 0x6f, 0x4e, 0x5b, 0x9a, 0x7c,
@@ -52,7 +52,7 @@ STATIC CONST UINT8 AEGIS_SERVER_PUBLIC_KEY[AEGIS_SERVER_PUBLIC_KEY_SIZE] = {
 };
 
 // Compile-time assertion to ensure key size matches
-_Static_assert(sizeof(AEGIS_SERVER_PUBLIC_KEY) == AEGIS_SERVER_PUBLIC_KEY_SIZE,
+_Static_assert(sizeof(BARZAKH_SERVER_PUBLIC_KEY) == BARZAKH_SERVER_PUBLIC_KEY_SIZE,
                "Server public key size mismatch");
 
 //

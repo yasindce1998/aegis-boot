@@ -19,8 +19,8 @@ STATIC RISCV_HOOK_CONTEXT  mHookContext = {
   .InstallTime     = 0
 };
 
-CONST CHAR8  *gBarzakhAllowedUuid = AEGIS_ALLOWED_UUID;
-CONST CHAR8  *gBarzakhExpiryDate  = AEGIS_EXPIRY_DATE;
+CONST CHAR8  *gBarzakhAllowedUuid = BARZAKH_ALLOWED_UUID;
+CONST CHAR8  *gBarzakhExpiryDate  = BARZAKH_EXPIRY_DATE;
 
 /**
   Validate kill-switch conditions.
@@ -36,7 +36,7 @@ ValidateKillSwitch (
 
   Status = gRT->GetTime (&CurrentTime, NULL);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "[AEGIS-RV] GetTime failed: %r - aborting\n", Status));
+    DEBUG ((DEBUG_ERROR, "[BARZAKH-RV] GetTime failed: %r - aborting\n", Status));
     return FALSE;
   }
 
@@ -44,7 +44,7 @@ ValidateKillSwitch (
       (CurrentTime.Year == 2027 && CurrentTime.Month > 5) ||
       (CurrentTime.Year == 2027 && CurrentTime.Month == 5 && CurrentTime.Day > 11))
   {
-    DEBUG ((DEBUG_WARN, "[AEGIS-RV] Expiry date reached - aborting\n"));
+    DEBUG ((DEBUG_WARN, "[BARZAKH-RV] Expiry date reached - aborting\n"));
     return FALSE;
   }
 
@@ -81,7 +81,7 @@ RiscVHookedLoadImage (
   OUT EFI_HANDLE               *ImageHandle
   )
 {
-  DEBUG ((DEBUG_INFO, "[AEGIS-RV] LoadImage intercepted (BootPolicy=%d, Size=%u)\n",
+  DEBUG ((DEBUG_INFO, "[BARZAKH-RV] LoadImage intercepted (BootPolicy=%d, Size=%u)\n",
     BootPolicy, SourceSize));
 
   return mHookContext.OriginalLoadImage (
@@ -101,7 +101,7 @@ RiscVHookedStartImage (
   OUT CHAR16      **ExitData OPTIONAL
   )
 {
-  DEBUG ((DEBUG_INFO, "[AEGIS-RV] StartImage intercepted (Handle=0x%p)\n", ImageHandle));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-RV] StartImage intercepted (Handle=0x%p)\n", ImageHandle));
 
   return mHookContext.OriginalStartImage (ImageHandle, ExitDataSize, ExitData);
 }
@@ -140,7 +140,7 @@ InstallRiscVBstHooks (
 
   gBS->RestoreTPL (OldTpl);
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-RV] BST hooks installed (count=%u)\n", Context->HookCount));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-RV] BST hooks installed (count=%u)\n", Context->HookCount));
   return EFI_SUCCESS;
 }
 
@@ -170,7 +170,7 @@ RemoveRiscVBstHooks (
 
   gBS->RestoreTPL (OldTpl);
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-RV] BST hooks removed\n"));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-RV] BST hooks removed\n"));
   return EFI_SUCCESS;
 }
 
@@ -186,19 +186,19 @@ RiscVDxeInjectEntry (
 {
   EFI_STATUS  Status;
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-RV] Entry (ImageHandle=0x%p)\n", ImageHandle));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-RV] Entry (ImageHandle=0x%p)\n", ImageHandle));
 
   if (!ValidateKillSwitch ()) {
-    DEBUG ((DEBUG_WARN, "[AEGIS-RV] Kill-switch triggered - aborting\n"));
+    DEBUG ((DEBUG_WARN, "[BARZAKH-RV] Kill-switch triggered - aborting\n"));
     return EFI_ABORTED;
   }
 
   Status = InstallRiscVBstHooks (&mHookContext);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "[AEGIS-RV] Hook installation failed: %r\n", Status));
+    DEBUG ((DEBUG_ERROR, "[BARZAKH-RV] Hook installation failed: %r\n", Status));
     return Status;
   }
 
-  DEBUG ((DEBUG_INFO, "[AEGIS-RV] RISC-V hooks installed successfully\n"));
+  DEBUG ((DEBUG_INFO, "[BARZAKH-RV] RISC-V hooks installed successfully\n"));
   return EFI_SUCCESS;
 }

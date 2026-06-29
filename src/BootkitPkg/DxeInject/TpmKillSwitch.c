@@ -240,7 +240,7 @@ ValidateSignedTimestamp (
   // Load server's public key (in production, from secure storage)
   //
   PublicKeySize = sizeof (PublicKey);
-  CopyMem (PublicKey, AEGIS_SERVER_PUBLIC_KEY, AEGIS_SERVER_PUBLIC_KEY_SIZE);
+  CopyMem (PublicKey, BARZAKH_SERVER_PUBLIC_KEY, BARZAKH_SERVER_PUBLIC_KEY_SIZE);
 
   //
   // Verify signature using RSA-SHA256
@@ -369,7 +369,7 @@ RsaVerify (
   IN UINT32  SignatureSize
   )
 {
-#ifdef AEGIS_STUB_CRYPTO
+#ifdef BARZAKH_STUB_CRYPTO
   //
   // CRITICAL SECURITY WARNING: Stub implementation for testing only
   // This MUST be replaced with actual cryptographic verification in production

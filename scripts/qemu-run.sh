@@ -25,7 +25,7 @@
 #   - Network is DISABLED by default for air-gap compliance
 #   - All executions are logged to audit trail
 #   - UUID and TPM EK are validated before boot
-#   - Requires AEGIS_EXPIRY_DATE environment variable
+#   - Requires BARZAKH_EXPIRY_DATE environment variable
 
 set -euo pipefail
 
@@ -48,7 +48,7 @@ DISK_IMAGE="${DISK_IMAGE:-$PROJECT_ROOT/test/test-disk.qcow2}"
 # VM Configuration
 VM_MEMORY="${VM_MEMORY:-4096}"
 VM_CPUS="${VM_CPUS:-2}"
-VM_UUID="${AEGIS_ALLOWED_UUID:-00000000-0000-0000-0000-000000000000}"
+VM_UUID="${BARZAKH_ALLOWED_UUID:-00000000-0000-0000-0000-000000000000}"
 
 # Execution mode
 TEST_MODE=false
