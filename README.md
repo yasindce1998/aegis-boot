@@ -6,7 +6,7 @@
 
 **The most comprehensive open-source UEFI firmware security research platform**
 
-*Offense emulation from Ring 0 to Ring -4 | 60 detection engines | Closed-loop adversary validation*
+*Offense emulation from Ring 0 to Ring -4 | 75 detection engines | Closed-loop adversary validation*
 
 [![CI](https://github.com/yasindce1998/Barzakh/actions/workflows/barzakh-ci.yml/badge.svg)](https://github.com/yasindce1998/Barzakh/actions/workflows/barzakh-ci.yml)
 [![Rust](https://img.shields.io/badge/Rust-stable-orange)](src/barzakh-scanner-rs/)
@@ -29,8 +29,8 @@ Barzakh is a full-stack firmware security research platform that models real-wor
 
 **Key capabilities:**
 - **31 offense modules** spanning x86_64, AArch64/Apple Silicon, and RISC-V architectures
-- **60 specialized detectors** with firmware-specific heuristics and structural analysis
-- **55 adversary payload generators** for automated true-positive validation
+- **75 specialized detectors** with firmware-specific heuristics and structural analysis (including 9 Android boot chain detectors)
+- **64 adversary payload generators** for automated true-positive validation
 - **Full Ring -4 coverage** — CPU microcode, speculative execution, thermal/power covert channels, voltage glitching, debug interfaces, rowhammer
 - **Hardware lab testing path** — documented progression from simulation to real silicon
 
@@ -122,7 +122,7 @@ All offense modules ship with `SIMULATION_MODE = TRUE` — they model behavior w
 
 ### 2. Barzakh Scanner — Detection Engine (Rust)
 
-**60 specialized detectors** organized by attack surface:
+**75 specialized detectors** organized by attack surface:
 
 <details>
 <summary><b>Full Detector List</b></summary>
@@ -190,6 +190,21 @@ All offense modules ship with `SIMULATION_MODE = TRUE` — they model behavior w
 | 58 | `voltage_glitch` | Ring -4 | Voltage fault injection (Plundervolt/CLKscrew) setup |
 | 59 | `debug_interface` | Ring -4 | Unauthorized debug port enablement (DCI/JTAG/DAP) |
 | 60 | `rowhammer` | Ring -4 | Rowhammer exploitation patterns and TRR bypass |
+| 61 | `asus_nvram` | Platform | ASUS EZ Flash NVRAM update URL redirect and signature bypass |
+| 62 | `idrac_spi` | Ring -3 | Dell iDRAC BMC-to-host SPI flash lateral movement |
+| 63 | `insyde_smm` | Ring -2 | Insyde H2O IHISI SMM handler exploitation (CVE-2022-24894) |
+| 64 | `lvfs_integrity` | Chain | LVFS/fwupd metadata spoofing and Jcat signature forgery |
+| 65 | `arm_tbbr_chain` | ARM/TrustZone | ARM TBBR certificate chain bypass with zeroed hashes |
+| 66 | `riscv_pmp_advanced` | RISC-V | Advanced PMP/ePMP bypass with mstatus manipulation |
+| 67 | `android_pkvm` | Android | pKVM hypervisor (AVF) — pvmfw signature forgery, EL2 shellcode |
+| 68 | `android_dice` | Android | DICE attestation chain — CDI forgery, UDS tampering |
+| 69 | `android_gki_boot` | Android | GKI boot.img v4/v5 — AVB hash mismatch, ramdisk tampering |
+| 70 | `android_rkp` | Android | Remote Key Provisioning — EEK certificate chain spoofing |
+| 71 | `android_binary_transparency` | Android | Pixel Binary Transparency — Merkle inclusion proof forgery |
+| 72 | `android_trusty` | Android | Trusty TEE — signature bypass, entry point patching |
+| 73 | `android_bootctrl` | Android | Boot Control HAL — A/B slot poisoning, retry exhaustion |
+| 74 | `android_vendor_dlkm` | Android | vendor_dlkm — unsigned kernel module injection via EROFS |
+| 75 | `android_bootconfig` | Android | Bootconfig parameter injection — init override, SELinux disable |
 
 </details>
 
@@ -200,13 +215,13 @@ All offense modules ship with `SIMULATION_MODE = TRUE` — they model behavior w
 | True Positive Rate | ≥ 85% | Validated via adversary corpus |
 | False Positive Rate | < 5% | Measured against clean firmware baselines |
 | ROC-AUC | ≥ 0.92 | Aggregated across all detector categories |
-| Scan Latency | < 500ms | Per-image, full 60-detector sweep |
+| Scan Latency | < 500ms | Per-image, full 75-detector sweep |
 
 ---
 
 ### 3. Barzakh Adversary — Red-Team Payload Generator (Rust)
 
-**Standalone binary: `barzakh-adversary`** | **55 payload generators** that produce realistic tampered firmware images for detection validation:
+**Standalone binary: `barzakh-adversary`** | **64 payload generators** that produce realistic tampered firmware images for detection validation:
 
 ```bash
 # Standalone CLI commands (no cargo required — use the release binary)
@@ -267,6 +282,19 @@ barzakh-adversary esp --payload dxe_persistence # Build ESP image for hardware t
 | `wifi_dxe_inject` | `wifi_dxe` | Intel CNVi wireless DXE firmware injection |
 | `pluton_intercept` | `pluton` | Microsoft Pluton mailbox interception + DICE tampering |
 | `sev_snp_vmpl_escape` | `confidential_vm` | AMD SEV-SNP VMPL privilege confusion attack |
+| `asus_nvram_redirect` | `asus_nvram` | ASUS EZ Flash NVRAM URL redirect + signature bypass |
+| `idrac_spi_lateral` | `idrac_spi` | Dell iDRAC BMC-to-host SPI flash write attack |
+| `insyde_smm_overflow` | `insyde_smm` | Insyde H2O capsule SMM buffer overflow |
+| `lvfs_metadata_spoof` | `lvfs_integrity` | LVFS metadata spoofing + Jcat signature forgery |
+| `android_pkvm_escape` | `android_pkvm` | pKVM pvmfw signature forgery + EL2 shellcode |
+| `android_dice_forge` | `android_dice` | DICE CBOR certificate chain with predictable CDI |
+| `android_gki_tamper` | `android_gki_boot` | GKI boot.img v4 with invalid AVB hash |
+| `android_rkp_spoof` | `android_rkp` | RKP provisioning blob with fake EEK chain |
+| `android_bt_forge` | `android_binary_transparency` | Fake transparency log + Merkle proof |
+| `android_trusty_tamper` | `android_trusty` | Trusty OS image with patched entry + disabled sig |
+| `android_bootctrl_poison` | `android_bootctrl` | A/B boot metadata with both slots unbootable |
+| `android_dlkm_inject` | `android_vendor_dlkm` | EROFS image with unsigned kernel module |
+| `android_bootconfig_inject` | `android_bootconfig` | Bootconfig with init override + SELinux disable |
 
 **Validation loop:** `generate payload` → `scan with detector` → `assert finding raised` → measure TPR/FPR
 
@@ -351,9 +379,9 @@ barzakh/
 │   │   ├── TpmAttestation/         # PCR monitoring
 │   │   └── EventLogExtractor/      # TCG event log parsing
 │   └── barzakh-scanner-rs/         # Rust workspace
-│       ├── crates/barzakh-core/    # Detection engine (60 detectors)
+│       ├── crates/barzakh-core/    # Detection engine (75 detectors)
 │       ├── crates/barzakh-cli/     # CLI binaries (barzakh-scanner + barzakh-adversary)
-│       └── crates/barzakh-adversary/ # Red-team library (55 payload generators)
+│       └── crates/barzakh-adversary/ # Red-team library (64 payload generators)
 ├── scripts/
 │   ├── build.sh                    # EDK II compilation
 │   ├── qemu-run.sh                 # QEMU test harness with vTPM
@@ -427,7 +455,7 @@ cargo build --release
 ### 4. Scan Firmware
 
 ```bash
-# Scan a firmware dump with all 60 detectors
+# Scan a firmware dump with all 75 detectors
 ./target/release/barzakh-scanner --target /path/to/firmware.bin --report --format html --output report.html
 
 # Compare against a known-good baseline
@@ -447,7 +475,7 @@ cargo test -p barzakh-adversary
 cargo test -p barzakh-adversary -- --ignored corpus_validation
 
 # Or use the standalone barzakh-adversary CLI
-./target/release/barzakh-adversary list                    # List all 55 payloads
+./target/release/barzakh-adversary list                    # List all 64 payloads
 ./target/release/barzakh-adversary generate --arch x86_64  # Generate payloads
 ./target/release/barzakh-adversary corpus --output ./corpus # Generate test corpus
 ./target/release/barzakh-adversary validate --corpus ./corpus # Validate detection rates
@@ -460,7 +488,7 @@ cargo test -p barzakh-adversary -- --ignored corpus_validation
 ```bash
 cd src/barzakh-scanner-rs
 
-# Unit + integration tests (60 detectors, 55 payloads)
+# Unit + integration tests (75 detectors, 64 payloads)
 cargo test
 
 # Adversary red-team tests
@@ -486,6 +514,7 @@ For real hardware testing beyond QEMU, see [`docs/LAB_TESTING.md`](docs/LAB_TEST
 | Document | Purpose |
 |----------|---------|
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System architecture, component interactions, data flow |
+| [`docs/ANDROID_BOOT.md`](docs/ANDROID_BOOT.md) | Android boot security — 9 modules covering pKVM, DICE, GKI, RKP, Trusty, and more |
 | [`docs/SETUP.md`](docs/SETUP.md) | Complete environment setup (EDK II, QEMU, swtpm, Rust) |
 | [`docs/TESTING.md`](docs/TESTING.md) | Virtualization-first testing strategy and CI pipeline |
 | [`docs/USECASES.md`](docs/USECASES.md) | Complete catalog of offense/defense techniques with examples |
@@ -533,7 +562,7 @@ This project models real-world threats including BlackLotus, CosmicStrand, LoJax
 - **Closed-loop validation framework** — every detector has a matching adversary payload; TPR is measured, not estimated
 - **PCR replay algorithm** for TPM attestation validation against boot sequence manipulation
 - **Firmware Volume structural analysis** reducing false positives through context-aware detection
-- **Cross-architecture coverage** — x86_64, AArch64 (including Apple Silicon), and RISC-V offense modeling
+- **Cross-architecture coverage** — x86_64, AArch64 (including Apple Silicon), RISC-V, and Android boot chain offense modeling
 - **Automated CI/CD pipeline** ensuring detection regressions are caught before merge
 
 ---

@@ -2,7 +2,7 @@
 
 High-performance UEFI bootkit detection engine written in Rust.
 
-Barzakh Scanner analyzes firmware images, memory dumps, and boot measurements to detect bootkit artifacts with high accuracy and minimal false positives. It implements 60 specialized detectors covering the full spectrum of firmware-level threats across x86_64, AArch64, and RISC-V architectures — from Ring 0 (UEFI DXE) down through Ring -4 (CPU microarchitecture).
+Barzakh Scanner analyzes firmware images, memory dumps, and boot measurements to detect bootkit artifacts with high accuracy and minimal false positives. It implements 75 specialized detectors covering the full spectrum of firmware-level threats across x86_64, AArch64, RISC-V, and Android architectures — from Ring 0 (UEFI DXE) down through Ring -4 (CPU microarchitecture), plus mobile boot chain attacks.
 
 ## Detection Capabilities
 
@@ -147,7 +147,7 @@ barzakh-scanner info
 ### barzakh-adversary (Offensive)
 
 ```bash
-# List all 55 available payloads
+# List all 64 available payloads
 barzakh-adversary list
 
 # Generate payloads for a specific architecture
@@ -178,7 +178,7 @@ barzakh-scanner-rs/
     │   │   ├── scanner.rs        # Scan orchestration
     │   │   ├── baseline.rs       # Baseline configuration
     │   │   ├── detector.rs       # Detector trait + types
-    │   │   ├── detectors/        # 60 detection modules
+    │   │   ├── detectors/        # 75 detection modules
     │   │   └── reports/          # HTML/JSON/Markdown reports
     │   └── tests/
     │       └── scanner_integration.rs
@@ -189,7 +189,7 @@ barzakh-scanner-rs/
     └── barzakh-adversary/        # Red-team payload generator
         ├── src/
         │   ├── lib.rs            # Payload trait + public API
-        │   ├── payloads/         # 55 payload generators
+        │   ├── payloads/         # 64 payload generators
         │   ├── validate/         # Scanner invocation + result comparison
         │   ├── corpus.rs         # Malicious/clean pair generator
         │   └── deploy/           # ESP image builder + QEMU orchestration (WIP)

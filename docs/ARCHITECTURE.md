@@ -50,8 +50,8 @@ sequenceDiagram
 │  and validates scanner coverage in a closed loop.                     │
 ├───────────────────────────────────────────────────────────────────────┤
 │  Layer 3: Rust Scanner (barzakh-core + barzakh-cli)                   │
-│  Defense engine with 60 detectors (x86_64, ARM, RISC-V) that         │
-│  analyzes memory dumps and firmware images for bootkit artifacts.     │
+│  Defense engine with 75 detectors (x86_64, ARM, RISC-V, Android)     │
+│  that analyzes memory dumps and firmware images for bootkit artifacts.│
 └───────────────────────────────────────────────────────────────────────┘
 
 Data flow:  Adversary generates payload → Scanner detects → Results validated
@@ -153,6 +153,7 @@ barzakh/
 ├── docs/
 │   ├── SETUP.md              # Environment setup guide
 │   ├── ARCHITECTURE.md       # This file
+│   ├── ANDROID_BOOT.md       # Android boot security (9 modules)
 │   ├── TESTING.md            # Testing strategy
 │   └── USECASES.md           # Offense & defense use cases
 ├── src/
@@ -205,6 +206,20 @@ Each payload generates a raw binary blob mimicking a specific bootkit artifact. 
 | `PeInjectPayload` | Minimal MZ + PE\0\0 at page-aligned offset | `memory` (PE in runtime) |
 | `FirmwareVolumeTamperPayload` | `_FVH` signature with corrupted 16-bit header checksum | `firmware_volume` (checksum failure) |
 | `SignaturePlantPayload` | BlackLotus, CosmicStrand, MoonBounce byte sequences | `memory` (Aho-Corasick match) |
+
+#### Android Boot Payloads (AArch64)
+
+| Payload | Binary Output | Scanner Detector Triggered |
+| :--- | :--- | :--- |
+| `AndroidPkvmEscapePayload` | Forged pvmfw image with EL2 shellcode entry | `android_pkvm` |
+| `AndroidDiceForgePayload` | CBOR DICE chain with predictable CDI values | `android_dice` |
+| `AndroidGkiTamperPayload` | boot.img v4 with modified ramdisk + invalid AVB hash | `android_gki_boot` |
+| `AndroidRkpSpoofPayload` | RKP blob with fake EEK certificate chain | `android_rkp` |
+| `AndroidBtForgePayload` | Fake transparency log with crafted Merkle path | `android_binary_transparency` |
+| `AndroidTrustyTamperPayload` | Trusty image with patched entry + disabled signature | `android_trusty` |
+| `AndroidBootctrlPoisonPayload` | Poisoned boot_ctrl with both slots unbootable | `android_bootctrl` |
+| `AndroidDlkmInjectPayload` | EROFS image with unsigned kernel module | `android_vendor_dlkm` |
+| `AndroidBootconfigInjectPayload` | Boot image with malicious bootconfig section | `android_bootconfig` |
 
 ### 7.3 Validation Pipeline
 
