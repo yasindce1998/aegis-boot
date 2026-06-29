@@ -109,7 +109,7 @@ The original 50-boot FPR sample is insufficient for statistical confidence. The 
 
 ## 8. Adversary Red-Team Testing (Automated)
 
-The `barzakh-adversary` crate provides automated, closed-loop validation of the scanner's detection capabilities.
+The `barzakh-adversary` crate provides automated, closed-loop validation of the scanner's detection capabilities. It is exposed via the standalone `barzakh-adversary` binary for manual use and via `cargo test` for CI integration.
 
 ### 8.1 Payload-Level Validation
 
@@ -126,6 +126,12 @@ cargo test -p barzakh-adversary
 
 # Run corpus-level E2E (generates all payloads + clean pairs, measures TPR/FPR)
 cargo test -p barzakh-adversary -- --ignored corpus_validation
+
+# Or use the standalone binary for manual testing:
+barzakh-adversary list                        # Show all 33 payloads
+barzakh-adversary generate --arch x86_64      # Generate payloads
+barzakh-adversary corpus --output ./corpus    # Generate paired corpus
+barzakh-adversary validate --corpus ./corpus  # Measure detection rates
 ```
 
 ### 8.2 Corpus Validation

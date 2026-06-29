@@ -164,8 +164,8 @@ barzakh/
 │   ├── AttestationPkg/       # Defensive TPM querying & event log extractors
 │   └── barzakh-scanner-rs/   # Rust workspace
 │       ├── crates/barzakh-core/      # Detection engine library
-│       ├── crates/barzakh-cli/       # CLI binary
-│       └── crates/barzakh-adversary/ # Red-team payload generator
+│       ├── crates/barzakh-cli/       # CLI binaries (barzakh-scanner + barzakh-adversary)
+│       └── crates/barzakh-adversary/ # Red-team payload generator library
 ├── scripts/
 │   ├── build.sh              # EDK II compilation
 │   ├── qemu-run.sh           # QEMU test harness with vTPM
@@ -181,7 +181,7 @@ barzakh/
 
 ## 7. Adversary Crate Architecture
 
-The `barzakh-adversary` crate implements a red-team payload generation and validation framework.
+The `barzakh-adversary` crate implements a red-team payload generation and validation framework. It is exposed to end-users via the standalone `barzakh-adversary` binary (built from `barzakh-cli/src/adversary_main.rs`), which provides CLI commands: `generate`, `list`, `corpus`, `validate`, `qemu`, and `esp`.
 
 ### 7.1 Payload Trait
 

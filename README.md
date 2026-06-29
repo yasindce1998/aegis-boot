@@ -186,7 +186,17 @@ All offense modules ship with `SIMULATION_MODE = TRUE` — they model behavior w
 
 ### 3. Barzakh Adversary — Red-Team Payload Generator (Rust)
 
-**33 payload generators** that produce realistic tampered firmware images for detection validation:
+**Standalone binary: `barzakh-adversary`** | **33 payload generators** that produce realistic tampered firmware images for detection validation:
+
+```bash
+# Standalone CLI commands (no cargo required — use the release binary)
+barzakh-adversary list                          # List all payloads with arch & expected detections
+barzakh-adversary generate --arch x86_64        # Generate all x86_64 payloads
+barzakh-adversary corpus --output ./corpus      # Generate malicious+clean paired corpus
+barzakh-adversary validate --corpus ./corpus    # Run scanner against corpus, measure TPR/FPR
+barzakh-adversary qemu --payload trampoline     # Boot payload in QEMU for live testing
+barzakh-adversary esp --payload dxe_persistence # Build ESP image for hardware testing
+```
 
 | Payload | Target Detector | Technique |
 |---------|----------------|-----------|
@@ -308,8 +318,8 @@ barzakh/
 │   │   └── EventLogExtractor/      # TCG event log parsing
 │   └── barzakh-scanner-rs/         # Rust workspace
 │       ├── crates/barzakh-core/    # Detection engine (43 detectors)
-│       ├── crates/barzakh-cli/     # CLI binary (barzakh-scanner)
-│       └── crates/barzakh-adversary/ # Red-team (33 payload generators)
+│       ├── crates/barzakh-cli/     # CLI binaries (barzakh-scanner + barzakh-adversary)
+│       └── crates/barzakh-adversary/ # Red-team library (33 payload generators)
 ├── scripts/
 │   ├── build.sh                    # EDK II compilation
 │   ├── qemu-run.sh                 # QEMU test harness with vTPM
@@ -401,6 +411,12 @@ cargo test -p barzakh-adversary
 
 # Full corpus validation (E2E: generate → scan → measure TPR/FPR)
 cargo test -p barzakh-adversary -- --ignored corpus_validation
+
+# Or use the standalone barzakh-adversary CLI
+./target/release/barzakh-adversary list                    # List all 33 payloads
+./target/release/barzakh-adversary generate --arch x86_64  # Generate payloads
+./target/release/barzakh-adversary corpus --output ./corpus # Generate test corpus
+./target/release/barzakh-adversary validate --corpus ./corpus # Validate detection rates
 ```
 
 ---

@@ -34,9 +34,21 @@ This document describes the operational use cases for Project Barzakh across bot
 3. The corpus generator produces malicious + clean pairs for automated TPR/FPR measurement
 4. Run against any scanner (not just Barzakh's own) to benchmark detection rates
 
-**Example workflow:**
+**Example workflow (using standalone binary):**
 ```bash
+# List all available payloads
+barzakh-adversary list
+
 # Generate a test corpus
+barzakh-adversary corpus --output ./corpus
+
+# Validate detection rates against the corpus
+barzakh-adversary validate --corpus ./corpus
+```
+
+**Alternative workflow (via cargo tests):**
+```bash
+# Run corpus validation through the test harness
 cargo test -p barzakh-adversary -- --ignored corpus_validation
 
 # The corpus includes:
@@ -117,10 +129,13 @@ The project's CI enforces this loop: if a payload's expected detection regresses
 **Example workflow:**
 ```bash
 # Establish baseline from golden image
-barzakh-scanner --target golden-firmware.bin --report --format json --output baseline.json
+barzakh-scanner baseline --target golden-firmware.bin --output baseline.json
 
 # Periodic scan against baseline
-barzakh-scanner --target current-firmware.bin --baseline baseline.json --report --format html --output report.html
+barzakh-scanner scan --target current-firmware.bin --baseline baseline.json
+
+# Generate report for analyst review
+barzakh-scanner report --target current-firmware.bin --format html --output report.html
 ```
 
 **Detection coverage:** Boot Services table integrity, firmware volume checksums, PE injection in runtime memory, known bootkit signatures, trampoline patterns, entropy anomalies, and 12 additional heuristics.
@@ -177,7 +192,8 @@ firmware-security-check:
   steps:
     - name: Scan firmware image
       run: |
-        barzakh-scanner --target build/firmware.bin --report --format json --output scan.json
+        barzakh-scanner scan --target build/firmware.bin
+        barzakh-scanner report --target build/firmware.bin --format json --output scan.json
         # Fail if any critical/high findings
         jq -e '.summary.critical == 0 and .summary.high == 0' scan.json
 ```

@@ -104,7 +104,7 @@ All contributions undergo rigorous review:
 
 ### General Guidelines
 
-- **Language**: C11 for UEFI code, Python 3.10+ for tooling, Bash for scripts
+- **Language**: C11 for UEFI code, Rust (stable) for scanner/adversary binaries, Python 3.10+ for tooling, Bash for scripts
 - **Style**: Follow EDK II coding style for UEFI code
 - **Comments**: Clear, concise, and explain *why*, not just *what*
 - **Documentation**: Update relevant docs with any changes

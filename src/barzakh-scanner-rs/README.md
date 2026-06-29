@@ -85,26 +85,58 @@ Barzakh Scanner analyzes firmware images, memory dumps, and boot measurements to
 cd src/barzakh-scanner-rs
 cargo build --release
 
-# Binary output at target/release/barzakh-scanner
+# Binary outputs at:
+#   target/release/barzakh-scanner    (defensive: scan, baseline, report, validate, detectors, info)
+#   target/release/barzakh-adversary  (offensive: generate, list, corpus, validate, qemu, esp)
 ```
 
 ## Usage
 
+### barzakh-scanner (Defensive)
+
 ```bash
 # Scan a firmware image
-barzakh-scanner --target firmware.bin
+barzakh-scanner scan --target firmware.bin
 
 # Scan with baseline comparison
-barzakh-scanner --target firmware.bin --baseline baseline.json
+barzakh-scanner scan --target firmware.bin --baseline baseline.json
 
 # Generate HTML report
-barzakh-scanner --target firmware.bin --report --format html --output report.html
+barzakh-scanner report --target firmware.bin --format html --output report.html
 
 # Run specific detectors only
-barzakh-scanner --target dump.bin --scan-types pcr,memory,hook
+barzakh-scanner scan --target dump.bin --scan-types pcr,memory,hook
 
-# Validate against test corpus
-barzakh-scanner --target firmware.bin --validate --corpus test-data/
+# Validate detectors against test corpus
+barzakh-scanner validate --corpus test-data/
+
+# List all available detectors
+barzakh-scanner detectors
+
+# Show platform and build info
+barzakh-scanner info
+```
+
+### barzakh-adversary (Offensive)
+
+```bash
+# List all 33 available payloads
+barzakh-adversary list
+
+# Generate payloads for a specific architecture
+barzakh-adversary generate --arch x86_64
+
+# Generate full test corpus (malicious + clean pairs)
+barzakh-adversary corpus --output ./corpus
+
+# Validate corpus against scanner (measure TPR/FPR)
+barzakh-adversary validate --corpus ./corpus
+
+# Boot a payload in QEMU for live testing
+barzakh-adversary qemu --payload trampoline
+
+# Build ESP image for hardware testing
+barzakh-adversary esp --payload dxe_persistence
 ```
 
 ## Architecture
@@ -123,8 +155,10 @@ barzakh-scanner-rs/
     │   │   └── reports/          # HTML/JSON/Markdown reports
     │   └── tests/
     │       └── scanner_integration.rs
-    ├── barzakh-cli/              # Binary crate (produces `barzakh-scanner`)
-    │   └── src/main.rs           # CLI interface (clap)
+    ├── barzakh-cli/              # Binary crate (produces `barzakh-scanner` + `barzakh-adversary`)
+    │   └── src/
+    │       ├── main.rs           # Scanner CLI (defensive commands)
+    │       └── adversary_main.rs # Adversary CLI (offensive commands)
     └── barzakh-adversary/        # Red-team payload generator
         ├── src/
         │   ├── lib.rs            # Payload trait + public API

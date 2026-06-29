@@ -175,10 +175,11 @@ chmod +x recover.sh
 # Scan the real firmware dump with Barzakh
 cd src/barzakh-scanner-rs
 cargo build --release
-./target/release/barzakh-scanner --target /path/to/original_firmware.bin --report --format html --output real_hw_report.html
+./target/release/barzakh-scanner scan --target /path/to/original_firmware.bin
+./target/release/barzakh-scanner report --target /path/to/original_firmware.bin --format html --output real_hw_report.html
 
 # Run with all detectors explicitly
-./target/release/barzakh-scanner --target /path/to/original_firmware.bin --scan-types all
+./target/release/barzakh-scanner scan --target /path/to/original_firmware.bin --scan-types all
 ```
 
 #### What Happens
@@ -208,16 +209,16 @@ The scanner reads the binary file you provide. It never opens hardware devices, 
 cd src/barzakh-scanner-rs
 cargo test -p barzakh-adversary -- --ignored corpus_validation
 
-# Or manually inject specific payloads into a copy of the real dump
+# Or use the standalone barzakh-adversary binary
 cp /path/to/original_firmware.bin /tmp/test_image.bin
 
 # Run the adversary payloads against the real image structure
-cargo run -p barzakh-adversary -- generate --input /tmp/test_image.bin --output /tmp/tampered/
+./target/release/barzakh-adversary generate --input /tmp/test_image.bin --output /tmp/tampered/
 
 # Scan all tampered images
 for img in /tmp/tampered/*.bin; do
     echo "=== Scanning: $img ==="
-    ./target/release/barzakh-scanner --target "$img" --report
+    ./target/release/barzakh-scanner scan --target "$img" --report
 done
 ```
 
@@ -673,16 +674,38 @@ sudo python chipsec_util.py msr 0x13A  # IA32_FEATURE_CONTROL (Boot Guard)
 
 ```bash
 # Scan a firmware dump
-./target/release/barzakh-scanner --target firmware.bin
+./target/release/barzakh-scanner scan --target firmware.bin
 
 # Generate HTML report
-./target/release/barzakh-scanner --target firmware.bin --report --format html --output report.html
+./target/release/barzakh-scanner report --target firmware.bin --format html --output report.html
 
 # Compare against baseline
-./target/release/barzakh-scanner --target firmware.bin --baseline clean_baseline.json
+./target/release/barzakh-scanner scan --target firmware.bin --baseline clean_baseline.json
 
 # Scan with specific detector categories
-./target/release/barzakh-scanner --target firmware.bin --scan-types spi,smm,acpi,me
+./target/release/barzakh-scanner scan --target firmware.bin --scan-types spi,smm,acpi,me
+```
+
+### barzakh-adversary — Red-Team Payload Generator
+
+```bash
+# List all 33 available payloads
+./target/release/barzakh-adversary list
+
+# Generate payloads for your target architecture
+./target/release/barzakh-adversary generate --arch x86_64
+
+# Generate a full test corpus (malicious + clean pairs)
+./target/release/barzakh-adversary corpus --output ./corpus
+
+# Validate detection rates against corpus
+./target/release/barzakh-adversary validate --corpus ./corpus
+
+# Boot a payload in QEMU for live observation
+./target/release/barzakh-adversary qemu --payload trampoline
+
+# Build ESP image for flashing to real hardware
+./target/release/barzakh-adversary esp --payload dxe_persistence
 ```
 
 ---
