@@ -2,17 +2,23 @@ pub mod acpi_backdoor;
 pub mod amt_sol;
 pub mod arm_iboot;
 pub mod arm_scm;
+pub mod arm_tbbr_bypass;
 pub mod arm_trustzone;
 pub mod auth_var_rollback;
 pub mod blacklotus_mok;
+pub mod bmc_spi_lateral;
 pub mod boot_guard_bypass;
 pub mod boot_services_hook;
+pub mod bootkitty_grub_patch;
 pub mod capsule_tamper;
 pub mod cxl_dma_attack;
 pub mod dxe_depex_hijack;
+pub mod esp_persistence;
 pub mod ftpm_forge;
 pub mod fv_tamper;
+pub mod gpu_vbios_implant;
 pub mod heci_traffic;
+pub mod http_boot_mitm;
 pub mod logofail_image;
 pub mod me_dma_inject;
 pub mod me_spi_region;
@@ -21,16 +27,24 @@ pub mod optionrom_inject;
 pub mod pe_inject;
 pub mod pei_core_patch;
 pub mod pixiefail_dhcp;
+pub mod pluton_intercept;
 pub mod psp_tamper;
 pub mod riscv_opensbi;
 pub mod riscv_pmp_bypass;
 pub mod riscv_uefi_boot;
+pub mod runtime_services_hook;
 pub mod s3_bootscript_inject;
+pub mod sbat_rollback;
 pub mod secureboot_bypass;
+pub mod secureboot_reloader;
+pub mod sev_snp_vmpl_escape;
 pub mod signature_plant;
 pub mod smm_timing_anomaly;
 pub mod spi_region_tamper;
+pub mod tdx_ovmf_inject;
+pub mod tpm_ref_overflow;
 pub mod trampoline;
+pub mod wifi_dxe_inject;
 
 use crate::Payload;
 
@@ -69,5 +83,19 @@ pub fn create_all_payloads() -> Vec<Box<dyn Payload>> {
         Box::new(riscv_opensbi::RiscvOpensbiPayload),
         Box::new(riscv_uefi_boot::RiscvUefiBootPayload),
         Box::new(riscv_pmp_bypass::RiscvPmpBypassPayload),
+        Box::new(bootkitty_grub_patch::BootkittyGrubPatchPayload),
+        Box::new(secureboot_reloader::SecurebootReloaderPayload),
+        Box::new(sbat_rollback::SbatRollbackPayload),
+        Box::new(esp_persistence::EspPersistencePayload),
+        Box::new(runtime_services_hook::RuntimeServicesHookPayload),
+        Box::new(tdx_ovmf_inject::TdxOvmfInjectPayload),
+        Box::new(bmc_spi_lateral::BmcSpiLateralPayload),
+        Box::new(gpu_vbios_implant::GpuVbiosImplantPayload),
+        Box::new(http_boot_mitm::HttpBootMitmPayload),
+        Box::new(tpm_ref_overflow::TpmRefOverflowPayload),
+        Box::new(arm_tbbr_bypass::ArmTbbrBypassPayload),
+        Box::new(wifi_dxe_inject::WifiDxeInjectPayload),
+        Box::new(pluton_intercept::PlutonInterceptPayload),
+        Box::new(sev_snp_vmpl_escape::SevSnpVmplEscapePayload),
     ]
 }

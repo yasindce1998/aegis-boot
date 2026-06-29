@@ -1,22 +1,28 @@
 pub mod acpi_integrity;
 pub mod amd_psp;
 pub mod amt;
+pub mod arm_tbbr;
 pub mod arm_trustzone;
 pub mod attestation;
 pub mod auth_variable;
 pub mod blacklotus;
+pub mod bmc_spi;
 pub mod boot_guard;
 pub mod capsule_update;
+pub mod confidential_vm;
 pub mod cxl_device;
 pub mod differ;
 pub mod dxe_dispatcher;
 pub mod entropy;
+pub mod esp_integrity;
 pub mod eventlog;
 pub mod firmware_volume;
 pub mod ftpm;
 pub mod heci;
 pub mod hook;
+pub mod http_boot;
 pub mod introspection;
+pub mod linux_bootchain;
 pub mod logofail;
 pub mod mbr;
 pub mod me_dma;
@@ -30,9 +36,12 @@ pub mod pcr_oracle;
 pub mod pcr_replay;
 pub mod pei_implant;
 pub mod pixiefail;
+pub mod pluton;
 pub mod pmp_bypass;
+pub mod reloader;
 pub mod runtime;
 pub mod s3_bootscript;
+pub mod sbat;
 pub mod secureboot;
 pub mod secureboot_chain;
 pub mod self_erasure;
@@ -42,6 +51,8 @@ pub mod spi_integrity;
 pub mod spi_region;
 pub mod symexec;
 pub mod timetravel;
+pub mod tpm_command;
+pub mod wifi_dxe;
 
 use crate::baseline::Baseline;
 use crate::detector::Detector;
@@ -91,5 +102,16 @@ pub fn create_all_detectors(baseline: Option<Baseline>) -> Vec<Box<dyn Detector>
         Box::new(arm_trustzone::ArmTrustzoneDetector::new()),
         Box::new(opensbi::OpensbiDetector::new()),
         Box::new(pmp_bypass::PmpBypassDetector::new()),
+        Box::new(linux_bootchain::LinuxBootchainDetector::new()),
+        Box::new(reloader::ReloaderDetector::new()),
+        Box::new(sbat::SbatDetector::new()),
+        Box::new(esp_integrity::EspIntegrityDetector::new()),
+        Box::new(confidential_vm::ConfidentialVmDetector::new()),
+        Box::new(bmc_spi::BmcSpiDetector::new()),
+        Box::new(http_boot::HttpBootDetector::new()),
+        Box::new(tpm_command::TpmCommandDetector::new()),
+        Box::new(arm_tbbr::ArmTbbrDetector::new()),
+        Box::new(wifi_dxe::WifiDxeDetector::new()),
+        Box::new(pluton::PlutonDetector::new()),
     ]
 }
