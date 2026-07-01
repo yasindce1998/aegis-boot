@@ -23,7 +23,7 @@ impl Payload for MeVersionRollbackPayload {
         data[0x01] = 0x4D; // 'M'
         data[0x02] = 0x4E; // 'N'
         data[0x03] = 0x32; // '2'
-        // SVN at +0x24 = 5
+                           // SVN at +0x24 = 5
         data[0x24..0x28].copy_from_slice(&5u32.to_le_bytes());
 
         // Second $MN2 manifest at offset 0x1000 with SVN=1 (rollback)

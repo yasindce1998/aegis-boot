@@ -39,9 +39,7 @@ impl IosSecureEnclaveDetector {
         }
 
         // SEP image structure: magic + version(4) + size(4) + flags(4) + sig(256)
-        let flags = u32::from_le_bytes(
-            data[offset + 12..offset + 16].try_into().unwrap_or([0; 4]),
-        );
+        let flags = u32::from_le_bytes(data[offset + 12..offset + 16].try_into().unwrap_or([0; 4]));
 
         // Check signature region at +0x10 (256 bytes for RSA-2048)
         let sig_start = offset + 0x10;
@@ -62,9 +60,7 @@ impl IosSecureEnclaveDetector {
                         ),
                     )
                     .with_confidence(0.94)
-                    .with_recommendation(
-                        "Restore genuine SEP firmware signed by Apple.",
-                    ),
+                    .with_recommendation("Restore genuine SEP firmware signed by Apple."),
                 );
             }
         }
@@ -149,8 +145,8 @@ impl Detector for IosSecureEnclaveDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_unsigned_sep() {

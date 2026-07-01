@@ -45,7 +45,8 @@ impl BootGuardKmDetector {
         let key_hash_offset = offset + 0x14;
 
         // Check if RSA-2048 key hash is zeroed (256 bytes)
-        let key_hash = &data[key_hash_offset..key_hash_offset + 256.min(data.len() - key_hash_offset)];
+        let key_hash =
+            &data[key_hash_offset..key_hash_offset + 256.min(data.len() - key_hash_offset)];
         if key_hash.iter().all(|&b| b == 0x00) {
             findings.push(
                 Finding::new(
@@ -99,9 +100,7 @@ impl BootGuardKmDetector {
         }
 
         let version = data[offset + 8];
-        let flags = u16::from_le_bytes(
-            data[offset + 10..offset + 12].try_into().unwrap_or([0; 2]),
-        );
+        let flags = u16::from_le_bytes(data[offset + 10..offset + 12].try_into().unwrap_or([0; 2]));
 
         // If BPM flags indicate disabled enforcement
         if flags & 0x01 == 0 && flags != 0 {
@@ -142,15 +141,15 @@ impl Detector for BootGuardKmDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_zeroed_key_hash() {
         let mut data = vec![0u8; 0x200];
         data[0x00..0x08].copy_from_slice(&KEYM_MAGIC);
         data[0x08] = 0x02; // version
-        // key_hash at 0x14 is all zeros
+                           // key_hash at 0x14 is all zeros
 
         let mut tmp = NamedTempFile::new().unwrap();
         tmp.write_all(&data).unwrap();

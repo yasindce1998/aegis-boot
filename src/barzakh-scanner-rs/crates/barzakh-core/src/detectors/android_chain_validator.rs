@@ -213,8 +213,8 @@ impl Detector for AndroidChainValidatorDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_broken_chain() {
@@ -243,13 +243,13 @@ mod tests {
         // pKVM present and signed
         data[0x000..0x004].copy_from_slice(&PKVM_MAGIC);
         data[0x020..0x040].fill(0xAA); // non-zero sig
-        // DICE present with valid UDS
+                                       // DICE present with valid UDS
         data[0x100..0x104].copy_from_slice(&DICE_MAGIC);
         data[0x110..0x130].fill(0xBB); // non-zero UDS
-        // GKI present with cert
+                                       // GKI present with cert
         data[0x200..0x208].copy_from_slice(&ANDROID_BOOT_MAGIC);
         data[0x230..0x240].fill(0xCC); // non-zero boot_sig
-        // Trusty present and signed
+                                       // Trusty present and signed
         data[0x300..0x304].copy_from_slice(&TRUSTY_MAGIC);
         data[0x320..0x340].fill(0xDD); // non-zero sig
 

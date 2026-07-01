@@ -22,9 +22,7 @@ impl AndroidVbmetaChainDetector {
         let mut findings = Vec::new();
 
         for offset in 0..data.len().saturating_sub(256) {
-            if data[offset..offset + 4] == AVB_MAGIC
-                || data[offset..offset + 4] == *VBMETA_MAGIC
-            {
+            if data[offset..offset + 4] == AVB_MAGIC || data[offset..offset + 4] == *VBMETA_MAGIC {
                 self.validate_vbmeta(data, offset, &mut findings);
             }
         }
@@ -38,9 +36,8 @@ impl AndroidVbmetaChainDetector {
         }
 
         // Check algorithm type at +0x04
-        let algo_type = u32::from_le_bytes(
-            data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]),
-        );
+        let algo_type =
+            u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]));
 
         // algo_type == 0 means AVB_ALGORITHM_TYPE_NONE (verification disabled)
         if algo_type == 0 {
@@ -68,9 +65,8 @@ impl AndroidVbmetaChainDetector {
         }
 
         // Check rollback index at +0x10
-        let rollback_index = u64::from_le_bytes(
-            data[offset + 16..offset + 24].try_into().unwrap_or([0; 8]),
-        );
+        let rollback_index =
+            u64::from_le_bytes(data[offset + 16..offset + 24].try_into().unwrap_or([0; 8]));
 
         if rollback_index == 0 && algo_type != 0 {
             findings.push(
@@ -125,8 +121,8 @@ impl Detector for AndroidVbmetaChainDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_disabled_verification() {

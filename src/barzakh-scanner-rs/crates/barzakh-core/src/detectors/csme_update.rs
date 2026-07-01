@@ -34,9 +34,8 @@ impl CsmeUpdateDetector {
             return;
         }
 
-        let num_entries = u32::from_le_bytes(
-            data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]),
-        );
+        let num_entries =
+            u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]));
         let header_version = data[offset + 8];
 
         if num_entries > 512 {
@@ -151,8 +150,8 @@ impl Detector for CsmeUpdateDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_excessive_entries() {

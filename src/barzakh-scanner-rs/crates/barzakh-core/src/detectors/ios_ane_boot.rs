@@ -39,9 +39,8 @@ impl IosAneBootDetector {
         }
 
         // ANE firmware structure: magic(4) + version(4) + size(4) + flags(4) + sig(256)
-        let declared_size = u32::from_le_bytes(
-            data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]),
-        );
+        let declared_size =
+            u32::from_le_bytes(data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]));
 
         // Signature at +0x10 (256 bytes)
         let sig_start = offset + 0x10;
@@ -62,9 +61,7 @@ impl IosAneBootDetector {
                         ),
                     )
                     .with_confidence(0.91)
-                    .with_recommendation(
-                        "Restore genuine ANE firmware signed by Apple.",
-                    ),
+                    .with_recommendation("Restore genuine ANE firmware signed by Apple."),
                 );
             }
         }
@@ -79,7 +76,9 @@ impl IosAneBootDetector {
                     &format!(
                         "ANE at 0x{:08X} declares size {} bytes ({:.1} MB). \
                          Legitimate ANE firmware is typically under 8 MB.",
-                        offset, declared_size, declared_size as f64 / (1024.0 * 1024.0)
+                        offset,
+                        declared_size,
+                        declared_size as f64 / (1024.0 * 1024.0)
                     ),
                 )
                 .with_confidence(0.70),
@@ -87,9 +86,7 @@ impl IosAneBootDetector {
         }
 
         // Check flags for debug/development mode
-        let flags = u32::from_le_bytes(
-            data[offset + 12..offset + 16].try_into().unwrap_or([0; 4]),
-        );
+        let flags = u32::from_le_bytes(data[offset + 12..offset + 16].try_into().unwrap_or([0; 4]));
         if flags & 0x02 != 0 {
             findings.push(
                 Finding::new(
@@ -161,15 +158,15 @@ impl Detector for IosAneBootDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_unsigned_ane() {
         let mut data = vec![0u8; 0x200];
         data[0..4].copy_from_slice(&ANE_MAGIC);
         data[8..12].copy_from_slice(&0x100000u32.to_le_bytes()); // 1MB size
-        // sig at +0x10 is zeroed
+                                                                 // sig at +0x10 is zeroed
 
         let mut tmp = NamedTempFile::new().unwrap();
         tmp.write_all(&data).unwrap();
@@ -185,7 +182,7 @@ mod tests {
         let mut data = vec![0u8; 0x200];
         data[0..4].copy_from_slice(&ANE_MAGIC);
         data[8..12].copy_from_slice(&0x100000u32.to_le_bytes()); // 1MB
-        // Non-zero signature
+                                                                 // Non-zero signature
         data[0x10..0x110].fill(0xCC);
 
         let mut tmp = NamedTempFile::new().unwrap();

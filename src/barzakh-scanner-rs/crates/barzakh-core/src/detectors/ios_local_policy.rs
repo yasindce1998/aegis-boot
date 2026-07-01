@@ -57,9 +57,7 @@ impl IosLocalPolicyDetector {
                     ),
                 )
                 .with_confidence(0.92)
-                .with_recommendation(
-                    "Regenerate LocalPolicy with valid nonce binding via 1TR.",
-                ),
+                .with_recommendation("Regenerate LocalPolicy with valid nonce binding via 1TR."),
             );
         }
 
@@ -82,9 +80,7 @@ impl IosLocalPolicyDetector {
         }
 
         // Check version — version 0 may indicate uninitialized policy
-        let version = u32::from_le_bytes(
-            data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]),
-        );
+        let version = u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]));
         if version == 0 {
             findings.push(
                 Finding::new(
@@ -151,15 +147,15 @@ impl Detector for IosLocalPolicyDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_zeroed_nonce() {
         let mut data = vec![0u8; 0x100];
         data[0..4].copy_from_slice(&LPOL_MAGIC);
         data[4..8].copy_from_slice(&1u32.to_le_bytes()); // version=1
-        // nonce_hash at +8 is zeroed (already)
+                                                         // nonce_hash at +8 is zeroed (already)
 
         let mut tmp = NamedTempFile::new().unwrap();
         tmp.write_all(&data).unwrap();

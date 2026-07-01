@@ -63,9 +63,7 @@ impl IosIbootDetector {
                         ),
                     )
                     .with_confidence(0.93)
-                    .with_recommendation(
-                        "Restore genuine iBoot image signed by Apple.",
-                    ),
+                    .with_recommendation("Restore genuine iBoot image signed by Apple."),
                 );
             }
         }
@@ -122,7 +120,9 @@ impl IosIbootDetector {
         // IMG4 payload should have a component tag after the magic
         // Check if the IMG4 wraps an ibot (iBoot) payload
         let tag_region = &data[offset + 4..offset + 0x20];
-        let is_iboot_img4 = tag_region.windows(4).any(|w| w == b"ibot" || w == b"ibss" || w == b"ibec");
+        let is_iboot_img4 = tag_region
+            .windows(4)
+            .any(|w| w == b"ibot" || w == b"ibss" || w == b"ibec");
 
         if is_iboot_img4 {
             // Check for missing or zeroed SHSH blob (signature)
@@ -163,8 +163,8 @@ impl Detector for IosIbootDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_unsigned_iboot() {

@@ -22,9 +22,7 @@ impl MeManufacturingModeDetector {
         let mut findings = Vec::new();
 
         for offset in 0..data.len().saturating_sub(16) {
-            if data[offset..offset + 4] == FLASH_DESC_SIGNATURE
-                && offset + 0x44 < data.len()
-            {
+            if data[offset..offset + 4] == FLASH_DESC_SIGNATURE && offset + 0x44 < data.len() {
                 let fitm_byte = data[offset + 0x40];
                 if fitm_byte & 0x02 != 0 {
                     findings.push(
@@ -105,8 +103,8 @@ impl Detector for MeManufacturingModeDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_manufacturing_mode() {

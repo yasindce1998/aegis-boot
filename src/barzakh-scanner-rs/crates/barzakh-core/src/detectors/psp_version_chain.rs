@@ -23,8 +23,7 @@ impl PspVersionChainDetector {
         let mut directory_svns: Vec<(usize, u32, &str)> = Vec::new();
 
         for offset in 0..data.len().saturating_sub(20) {
-            if data[offset..offset + 4] == PSP_L2_MAGIC
-                || data[offset..offset + 4] == PSP_BL2_MAGIC
+            if data[offset..offset + 4] == PSP_L2_MAGIC || data[offset..offset + 4] == PSP_BL2_MAGIC
             {
                 let magic_str = if data[offset..offset + 4] == PSP_L2_MAGIC {
                     "$PL2"
@@ -114,8 +113,8 @@ impl Detector for PspVersionChainDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_rollback() {

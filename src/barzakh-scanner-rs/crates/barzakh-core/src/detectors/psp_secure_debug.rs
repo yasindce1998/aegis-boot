@@ -63,11 +63,8 @@ impl PspSecureDebugDetector {
                     continue;
                 }
 
-                let num_entries = u32::from_le_bytes(
-                    data[offset + 8..offset + 12]
-                        .try_into()
-                        .unwrap_or([0; 4]),
-                );
+                let num_entries =
+                    u32::from_le_bytes(data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]));
 
                 if num_entries > 256 || num_entries == 0 {
                     continue;
@@ -129,8 +126,8 @@ impl Detector for PspSecureDebugDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_debug_token() {

@@ -38,9 +38,8 @@ impl SmuFirmwareDetector {
             return;
         }
 
-        let declared_size = u32::from_le_bytes(
-            data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]),
-        );
+        let declared_size =
+            u32::from_le_bytes(data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]));
 
         // Check for abnormal size
         if declared_size > 0x100000 || declared_size == 0 {
@@ -52,7 +51,9 @@ impl SmuFirmwareDetector {
                     &format!(
                         "SMU image at 0x{:08X} declares size 0x{:08X} ({}KB). \
                          Normal SMU firmware is 64-512KB.",
-                        offset, declared_size, declared_size / 1024
+                        offset,
+                        declared_size,
+                        declared_size / 1024
                     ),
                 )
                 .with_confidence(0.70),
@@ -127,8 +128,8 @@ impl Detector for SmuFirmwareDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_zeroed_signature() {
@@ -136,7 +137,7 @@ mod tests {
         data[0..4].copy_from_slice(&SMU_MAGIC);
         data[4..7].copy_from_slice(&SMU_TAG);
         data[8..12].copy_from_slice(&0x8000u32.to_le_bytes()); // 32KB
-        // Signature at +0x100 is already zero
+                                                               // Signature at +0x100 is already zero
 
         let mut tmp = NamedTempFile::new().unwrap();
         tmp.write_all(&data).unwrap();

@@ -60,9 +60,8 @@ impl IosPplDetector {
 
         // APRR EL1 register values follow the magic
         // Byte +4: config flags — bit 0 should be 1 (enabled)
-        let config_flags = u32::from_le_bytes(
-            data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]),
-        );
+        let config_flags =
+            u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]));
 
         if config_flags == 0 {
             findings.push(
@@ -85,9 +84,8 @@ impl IosPplDetector {
         }
 
         // Check for suspicious all-permissive page table entries (+8)
-        let pte_mask = u32::from_le_bytes(
-            data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]),
-        );
+        let pte_mask =
+            u32::from_le_bytes(data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]));
 
         // 0x3 in both AP bits = EL0/EL1 full RWX (dangerous)
         if pte_mask == 0xFFFFFFFF {
@@ -113,9 +111,8 @@ impl IosPplDetector {
         }
 
         // Lock status at +4: 0 = not locked
-        let lock_status = u32::from_le_bytes(
-            data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]),
-        );
+        let lock_status =
+            u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]));
 
         if lock_status == 0 {
             findings.push(
@@ -149,8 +146,8 @@ impl Detector for IosPplDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_disabled_aprr() {
@@ -175,7 +172,7 @@ mod tests {
         data[0..4].copy_from_slice(&APRR_MAGIC);
         data[4..8].copy_from_slice(&0x01u32.to_le_bytes());
         data[8..12].copy_from_slice(&0x00000003u32.to_le_bytes()); // normal PTE mask
-        // PPL locked
+                                                                   // PPL locked
         data[0x20..0x24].copy_from_slice(&PPL_LOCKDOWN_MARKER);
         data[0x24..0x28].copy_from_slice(&0x01u32.to_le_bytes()); // locked
 

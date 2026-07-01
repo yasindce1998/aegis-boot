@@ -22,11 +22,11 @@ impl MeVersionChainDetector {
         let mut manifest_versions: Vec<(usize, u32)> = Vec::new();
 
         for offset in 0..data.len().saturating_sub(40) {
-            if data[offset..offset + 4] == MN2_MAGIC
-                && offset + 0x28 < data.len()
-            {
+            if data[offset..offset + 4] == MN2_MAGIC && offset + 0x28 < data.len() {
                 let svn = u32::from_le_bytes(
-                    data[offset + 0x24..offset + 0x28].try_into().unwrap_or([0; 4]),
+                    data[offset + 0x24..offset + 0x28]
+                        .try_into()
+                        .unwrap_or([0; 4]),
                 );
                 manifest_versions.push((offset, svn));
             }
@@ -116,8 +116,8 @@ impl Detector for MeVersionChainDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_version_rollback() {

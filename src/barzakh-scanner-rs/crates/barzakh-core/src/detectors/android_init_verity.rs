@@ -31,9 +31,8 @@ impl AndroidInitVerityDetector {
 
             // Check for dm-verity metadata
             if offset + 4 <= data.len() {
-                let magic = u32::from_le_bytes(
-                    data[offset..offset + 4].try_into().unwrap_or([0; 4]),
-                );
+                let magic =
+                    u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap_or([0; 4]));
                 if magic == DM_VERITY_MAGIC {
                     found_verity = true;
                     self.validate_dm_verity(data, offset, &mut findings);
@@ -69,9 +68,8 @@ impl AndroidInitVerityDetector {
         }
 
         // Check verity version at +8
-        let version = u32::from_le_bytes(
-            data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]),
-        );
+        let version =
+            u32::from_le_bytes(data[offset + 8..offset + 12].try_into().unwrap_or([0; 4]));
 
         if version == 0 {
             findings.push(
@@ -96,9 +94,7 @@ impl AndroidInitVerityDetector {
         }
 
         // Flags at +4: bit 0 = disabled
-        let flags = u32::from_le_bytes(
-            data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]),
-        );
+        let flags = u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap_or([0; 4]));
 
         if flags & 0x01 != 0 {
             findings.push(
@@ -113,9 +109,7 @@ impl AndroidInitVerityDetector {
                     ),
                 )
                 .with_confidence(0.92)
-                .with_recommendation(
-                    "Re-enable dm-verity and re-sign the vbmeta image.",
-                ),
+                .with_recommendation("Re-enable dm-verity and re-sign the vbmeta image."),
             );
         }
     }
@@ -185,8 +179,8 @@ impl Detector for AndroidInitVerityDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_disabled_verity() {

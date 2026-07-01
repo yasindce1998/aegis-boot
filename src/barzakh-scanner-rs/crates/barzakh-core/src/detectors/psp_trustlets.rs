@@ -5,8 +5,8 @@ use crate::detector::{Detector, DetectorError, Finding, Severity};
 const PSP_DIR_MAGIC: [u8; 4] = [0x24, 0x50, 0x53, 0x50]; // "$PSP"
 
 const KNOWN_ENTRY_TYPES: &[u8] = &[
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x10, 0x12, 0x13,
-    0x20, 0x21, 0x22, 0x24, 0x28, 0x30, 0x31, 0x32, 0x38, 0x39, 0x40, 0x47, 0x48, 0x49,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x10, 0x12, 0x13, 0x20,
+    0x21, 0x22, 0x24, 0x28, 0x30, 0x31, 0x32, 0x38, 0x39, 0x40, 0x47, 0x48, 0x49,
 ];
 
 pub struct PspTrustletsDetector;
@@ -79,7 +79,8 @@ impl PspTrustletsDetector {
             if entry_size_val > 0 && entry_loc > 0 {
                 let loc = entry_loc as usize;
                 if loc + 0x100 < data.len() {
-                    let sig_region = &data[loc + 0x100..loc + 0x100 + 64.min(data.len() - loc - 0x100)];
+                    let sig_region =
+                        &data[loc + 0x100..loc + 0x100 + 64.min(data.len() - loc - 0x100)];
                     if sig_region.iter().all(|&b| b == 0x00) && entry_size_val > 0x200 {
                         findings.push(
                             Finding::new(
@@ -154,15 +155,15 @@ impl Detector for PspTrustletsDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn fires_on_rogue_entry() {
         let mut data = vec![0u8; 0x200];
         data[0x00..0x04].copy_from_slice(&PSP_DIR_MAGIC);
         data[0x08..0x0C].copy_from_slice(&2u32.to_le_bytes()); // 2 entries
-        // Entry 0: known type 0x01
+                                                               // Entry 0: known type 0x01
         data[0x10] = 0x01;
         // Entry 1: unknown type 0xFE
         data[0x20] = 0xFE;
